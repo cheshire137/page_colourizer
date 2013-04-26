@@ -1,0 +1,39 @@
+{
+  "manifest_version": 2,
+  "name": "Page Colourizer",
+  "description": "This grabs a random color palette from ColourLovers.com and randomly applies it to the current web page you are viewing.",
+  "version": "1.0",
+  "permissions": [
+    "tabs", "<all_urls>", "background"
+  ],
+  "content_scripts": [
+    {
+      "all_frames": true,
+      "matches": ["http://*/*", "https://*/*", "<all_urls>", "file:///*"],
+      "js": ["colourizer.js"]
+    }
+  ],
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
+  }
+  // "content_scripts": [
+  //   {
+  //     "all_frames": true,
+  //     "js": ["colourizer.js"],
+  //     "matches": ["http://*/*", "https://*/*", "<all_urls>", "file:///*"]
+  //   }
+  // ],
+  // "background": {
+  //   "scripts": ["background.js"]
+  // },
+  // "background_page": "background.html",
+  // "run_at" : "document_end",
+  // "permissions": [
+  //   "tabs", "<all_urls>", "background"
+  // ],
+  // "browser_action": {
+  //   "default_icon": "icon.png",
+  //   "default_popup": "popup.html"
+  // }
+}
