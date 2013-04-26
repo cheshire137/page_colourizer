@@ -10,7 +10,7 @@
     {
       "all_frames": true,
       "matches": ["http://*/*", "https://*/*", "<all_urls>", "file:///*"],
-      "js": ["colourizer.js"]
+      "js": ["jquery-2.0.0.min.js", "colourizer.js"]
     }
   ],
   "browser_action": {
