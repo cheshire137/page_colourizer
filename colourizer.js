@@ -1,9 +1,3 @@
-var addedElement = document.createElement('p');
-addedElement.appendChild(document.createTextNode('Hello, world!'));
-
-var body = document.body;
-body.insertBefore(addedElement, body.firstChild);
-
 var page_colourizer = {
   random_palette_url: 'http://www.colourlovers.com/api/palettes/random',
 
