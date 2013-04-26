@@ -15,11 +15,14 @@ var page_colourizer = {
     var hex_nodes = xml.querySelectorAll('hex');
     var title = xml.querySelector('title').textContent;
     var url = xml.querySelector('url').textContent;
+    var image_url = xml.querySelector('imageUrl').textContent;
+    var user_name = xml.querySelector('userName').textContent;
     var hex_codes = [];
     for (var i=0; i<hex_nodes.length; i++) {
       hex_codes[i] = '#' + hex_nodes[i].textContent;
     }
-    callback({hex_codes: hex_codes, title: title, url: url});
+    callback({hex_codes: hex_codes, title: title, url: url, image_url: image_url,
+              user_name: user_name});
   }
 };
 

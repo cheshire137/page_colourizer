@@ -8,12 +8,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return false;
       });
       var h1 = $('<h1></h1>').append(link);
-      $('body').append(h1);
-      for (var i = 0; i < hex_codes.length; i++) {
-        var div = $('<div class="color-box"></div>');
-        div.css('background-color', hex_codes[i]);
-        $('body').append(div);
-      }
+      var img = $('<img alt="' + palette_data.title.replace(/"/g, "'") + '">');
+      img.attr('src', palette_data.image_url);
+      img.css('width', '228px');
+      img.css('height', '161px');
+      link.append(img);
+      var h2 = $('<h2>by ' + palette_data.user_name + '</h2>');
+      $('body').append(h1).append(h2);
     });
   });
 });
