@@ -14,11 +14,12 @@ var page_colourizer = {
     var xml = e.target.responseXML;
     var hex_nodes = xml.querySelectorAll('hex');
     var title = xml.querySelector('title').textContent;
+    var url = xml.querySelector('url').textContent;
     var hex_codes = [];
     for (var i=0; i<hex_nodes.length; i++) {
       hex_codes[i] = '#' + hex_nodes[i].textContent;
     }
-    callback({hex_codes: hex_codes, title: title});
+    callback({hex_codes: hex_codes, title: title, url: url});
   }
 };
 
