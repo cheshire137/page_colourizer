@@ -12,9 +12,15 @@ Planned features:
 
 - Allow you to change the usage of colors on the page, so you pick which of the palette's colors is used for text, for the background, for links, etc.
 
-- Look for colorized containers in the specific page, such as `div`s that have a background set on them, and apply a palette color to the element instead.
+- Allow saving a palette for a site so each time you load that site later, the same palette gets applied.
 
-- Provide more info about each palette, such as a link to its page on ColourLovers, author details, color names, etc.
+- Add Shuffle Colors button that changes how the current palette is applied to the page.
+
+- Allow you to pick a color and the extension grabs a palette that uses that color.
+
+- Add a Colour Frenzy option that will colorize every page automatically, as soon as it loads.
+
+- Add Favorite, Love links for each palette.
 
 # Credits
 
