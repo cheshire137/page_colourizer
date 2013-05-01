@@ -33,25 +33,43 @@ var page_colourizer = {
            rgb_code.substring(rgb_code.length - 3) != ' 0)';
   },
 
-  get_colored_elements: function() {
+  get_background_colored_elements: function() {
     var color_hash = {};
     var me = this;
+    var add_to_hash = function(key, el) {
+      if (color_hash.hasOwnProperty(key)) {
+        color_hash[key] = color_hash[key].concat([el]);
+      } else {
+        color_hash[key] = [el];
+      }
+    };
     $('*').each(function() {
       var el = $(this);
       var background = el.css('background-color');
       var text = el.css('color');
       if (me.has_color(background)) {
-        if (color_hash.hasOwnProperty(background)) {
-          color_hash[background] = color_hash[background].concat([el]);
-        } else {
-          color_hash[background] = [el];
-        }
-      } else if (me.has_color(text)) {
-        if (color_hash.hasOwnProperty(text)) {
-          color_hash[text] = color_hash[text].concat([el]);
-        } else {
-          color_hash[text] = [el];
-        }
+        add_to_hash(background, el);
+      }
+    });
+    return color_hash;
+  },
+
+  get_colored_elements: function() {
+    var color_hash = {};
+    var me = this;
+    var add_to_hash = function(key, el) {
+      if (color_hash.hasOwnProperty(key)) {
+        color_hash[key] = color_hash[key].concat([el]);
+      } else {
+        color_hash[key] = [el];
+      }
+    };
+    $('*').each(function() {
+      var el = $(this);
+      var background = el.css('background-color');
+      var text = el.css('color');
+      if (me.has_color(text)) {
+        add_to_hash(text, el);
       }
     });
     return color_hash;
@@ -83,22 +101,50 @@ var page_colourizer = {
     return 'rgb(' + r + ', ' + g + ', ' + b + ')';
   },
 
-  colourize_page: function(palette_data) {
-    var hex_codes = palette_data.hex_codes;
+  colourize_elements: function(hex_codes, el_hash, callback) {
     var num_colors = hex_codes.length;
-    var colors_elements = this.get_colored_elements();
-    var color_index = 0;
-    for (var orig_color in colors_elements) {
+    var color_index = Math.floor(Math.random() * num_colors);
+    for (var orig_color in el_hash) {
       var new_color = hex_codes[color_index];
-      var elements = colors_elements[orig_color];
+      var elements = el_hash[orig_color];
       for (var i=0; i<elements.length; i++) {
         var selector = $(elements[i]);
-        selector.css('background-color', new_color, 'important');
-        var rgb_bg = selector.css('background-color');
-        selector.css('color', this.scale_color(rgb_bg, 0.5), 'important');
+        callback(selector, new_color);
       }
       color_index = (color_index+1) % num_colors;
     }
+  },
+
+  get_background_color: function(el) {
+    var background = el.css('background-color');
+    if (background !== 'rgba(0, 0, 0, 0)') {
+      return background;
+    }
+    if (el.is('body')) {
+      return false;
+    }
+    return this.get_background_color(el.parent());
+  },
+
+  set_text_color_for_bg: function(el) {
+    var rgb_bg = this.get_background_color(el);
+    if (rgb_bg) {
+      el.css('color', this.scale_color(rgb_bg, 0.5), 'important');
+    }
+  },
+
+  colourize_page: function(palette_data) {
+    var me = this;
+    var hex_codes = palette_data.hex_codes;
+    var bg_elements = this.get_background_colored_elements();
+    this.colourize_elements(hex_codes, bg_elements, function(el, color) {
+      el.css('background-color', color, 'important');
+      me.set_text_color_for_bg(el);
+    });
+    var text_elements = this.get_colored_elements();
+    this.colourize_elements(hex_codes, text_elements, function(el, color) {
+      me.set_text_color_for_bg(el);
+    });
   }
 };
 
