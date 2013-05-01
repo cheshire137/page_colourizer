@@ -25,34 +25,36 @@ var page_colourizer = {
               user_name: user_name});
   },
 
-  has_background_color: function(background) {
-    if (background.substring(0, 4) == 'rgb(') {
+  has_color: function(rgb_code) {
+    if (rgb_code.substring(0, 4) == 'rgb(') {
       return true;
     }
-    return background.substring(0, 5) == 'rgba(' &&
-           background.substring(background.length - 3) != ' 0)';
+    return rgb_code.substring(0, 5) == 'rgba(' &&
+           rgb_code.substring(rgb_code.length - 3) != ' 0)';
   },
 
-  get_background_elements: function() {
-    var bg_hash = {};
+  get_colored_elements: function() {
+    var color_hash = {};
     var me = this;
     $('*').each(function() {
       var el = $(this);
       var background = el.css('background-color');
-      if (me.has_background_color(background)) {
-        if (bg_hash.hasOwnProperty(background)) {
-          bg_hash[background] = bg_hash[background].concat([el]);
+      var text = el.css('color');
+      if (me.has_color(background)) {
+        if (color_hash.hasOwnProperty(background)) {
+          color_hash[background] = color_hash[background].concat([el]);
         } else {
-          bg_hash[background] = [el];
+          color_hash[background] = [el];
+        }
+      } else if (me.has_color(text)) {
+        if (color_hash.hasOwnProperty(text)) {
+          color_hash[text] = color_hash[text].concat([el]);
+        } else {
+          color_hash[text] = [el];
         }
       }
     });
-    return bg_hash;
-  },
-
-  get_random_color: function(hex_codes) {
-    var index = Math.floor(Math.random() * hex_codes.length);
-    return hex_codes[index];
+    return color_hash;
   },
 
   split_rgb_code: function(rgb_code) {
@@ -83,16 +85,19 @@ var page_colourizer = {
 
   colourize_page: function(palette_data) {
     var hex_codes = palette_data.hex_codes;
-    var bg_hash = this.get_background_elements();
-    for (var orig_color in bg_hash) {
-      var new_color = this.get_random_color(hex_codes);
-      var elements = bg_hash[orig_color];
+    var num_colors = hex_codes.length;
+    var colors_elements = this.get_colored_elements();
+    var color_index = 0;
+    for (var orig_color in colors_elements) {
+      var new_color = hex_codes[color_index];
+      var elements = colors_elements[orig_color];
       for (var i=0; i<elements.length; i++) {
         var selector = $(elements[i]);
         selector.css('background-color', new_color, 'important');
         var rgb_bg = selector.css('background-color');
         selector.css('color', this.scale_color(rgb_bg, 0.5), 'important');
       }
+      color_index = (color_index+1) % num_colors;
     }
   }
 };
