@@ -61,6 +61,10 @@ var page_colourizer = {
     return this.get_colored_elements('color');
   },
 
+  get_bordered_elements: function() {
+    return this.get_colored_elements('border-color');
+  },
+
   split_rgb_code: function(rgb_code) {
     var parts = rgb_code.split(', ');
     var r = parseInt(parts[0].split('(')[1], 10);
@@ -152,6 +156,7 @@ var page_colourizer = {
     var bg_elements = this.get_background_colored_elements();
     this.colourize_elements(hex_codes, bg_elements, function(el, color) {
       el.css('background-color', color, 'important');
+      el.css('background-image', 'none', 'important');
       me.set_text_color_for_bg(el);
     });
   },
@@ -164,10 +169,26 @@ var page_colourizer = {
     });
   },
 
+  colourize_border_elements: function(hex_codes) {
+    var me = this;
+    var border_elements = this.get_bordered_elements();
+    this.colourize_elements(hex_codes, border_elements, function(el, color) {
+      var rgb_bg = me.get_background_color(el);
+      var border_color;
+      if (rgb_bg) {
+        border_color = me.scale_color(rgb_bg, -0.5);
+      } else {
+        border_color = color;
+      }
+      el.css('border-color', border_color, 'important');
+    });
+  },
+
   colourize_page: function(palette_data) {
     var hex_codes = palette_data.hex_codes;
     this.colourize_bg_elements(hex_codes);
     this.colourize_text_elements(hex_codes);
+    this.colourize_border_elements(hex_codes);
   }
 };
 
