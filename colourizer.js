@@ -33,9 +33,8 @@ var page_colourizer = {
            rgb_code.substring(rgb_code.length - 3) != ' 0)';
   },
 
-  get_colored_elements: function(prop) {
+  get_colored_elements: function(prop, should_include) {
     var color_hash = {};
-    var me = this;
     var add_to_hash = function(key, el) {
       if (color_hash.hasOwnProperty(key)) {
         color_hash[key] = color_hash[key].concat([el]);
@@ -46,7 +45,7 @@ var page_colourizer = {
     $('*').each(function() {
       var el = $(this);
       var prop_value = el.css(prop);
-      if (me.has_color(prop_value)) {
+      if (should_include(prop_value)) {
         add_to_hash(prop_value, el);
       }
     });
@@ -54,15 +53,26 @@ var page_colourizer = {
   },
 
   get_background_colored_elements: function() {
-    return this.get_colored_elements('background-color');
+    return this.get_colored_elements('background-color', this.has_color);
   },
 
   get_text_colored_elements: function() {
-    return this.get_colored_elements('color');
+    return this.get_colored_elements('color', this.has_color);
   },
 
   get_bordered_elements: function() {
-    return this.get_colored_elements('border-color');
+    return this.get_colored_elements('border-color', this.has_color);
+  },
+
+  get_text_shadowed_elements: function() {
+    var me = this;
+    return this.get_colored_elements('text-shadow', function(prop_value) {
+      if (prop_value == 'none') {
+        return false;
+      }
+      var shadow_rgb = prop_value.split(')')[0] + ')';
+      return me.has_color(shadow_rgb);
+    });
   },
 
   split_rgb_code: function(rgb_code) {
@@ -176,11 +186,28 @@ var page_colourizer = {
       var rgb_bg = me.get_background_color(el);
       var border_color;
       if (rgb_bg) {
-        border_color = me.scale_color(rgb_bg, -0.5);
+        border_color = me.scale_color(rgb_bg, -0.25);
       } else {
         border_color = color;
       }
       el.css('border-color', border_color, 'important');
+    });
+  },
+
+  colourize_text_shadow_elements: function(hex_codes) {
+    var me = this;
+    var shadow_elements = this.get_text_shadowed_elements();
+    this.colourize_elements(hex_codes, shadow_elements, function(el, color) {
+      var shadow = el.css('text-shadow');
+      var shadow_props = shadow.split(')')[1];
+      var rgb_bg = me.get_background_color(el);
+      var shadow_color;
+      if (rgb_bg) {
+        shadow_color = me.scale_color(rgb_bg, -0.5);
+      } else {
+        shadow_color = 'rgba(0, 0, 0, 0.3)';
+      }
+      el.css('text-shadow', shadow_color + shadow_props);
     });
   },
 
@@ -189,6 +216,7 @@ var page_colourizer = {
     this.colourize_bg_elements(hex_codes);
     this.colourize_text_elements(hex_codes);
     this.colourize_border_elements(hex_codes);
+    this.colourize_text_shadow_elements(hex_codes);
   }
 };
 
