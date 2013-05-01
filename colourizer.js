@@ -33,7 +33,7 @@ var page_colourizer = {
            rgb_code.substring(rgb_code.length - 3) != ' 0)';
   },
 
-  get_background_colored_elements: function() {
+  get_colored_elements: function(prop) {
     var color_hash = {};
     var me = this;
     var add_to_hash = function(key, el) {
@@ -45,34 +45,20 @@ var page_colourizer = {
     };
     $('*').each(function() {
       var el = $(this);
-      var background = el.css('background-color');
-      var text = el.css('color');
-      if (me.has_color(background)) {
-        add_to_hash(background, el);
+      var prop_value = el.css(prop);
+      if (me.has_color(prop_value)) {
+        add_to_hash(prop_value, el);
       }
     });
     return color_hash;
   },
 
-  get_colored_elements: function() {
-    var color_hash = {};
-    var me = this;
-    var add_to_hash = function(key, el) {
-      if (color_hash.hasOwnProperty(key)) {
-        color_hash[key] = color_hash[key].concat([el]);
-      } else {
-        color_hash[key] = [el];
-      }
-    };
-    $('*').each(function() {
-      var el = $(this);
-      var background = el.css('background-color');
-      var text = el.css('color');
-      if (me.has_color(text)) {
-        add_to_hash(text, el);
-      }
-    });
-    return color_hash;
+  get_background_colored_elements: function() {
+    return this.get_colored_elements('background-color');
+  },
+
+  get_text_colored_elements: function() {
+    return this.get_colored_elements('color');
   },
 
   split_rgb_code: function(rgb_code) {
@@ -126,25 +112,62 @@ var page_colourizer = {
     return this.get_background_color(el.parent());
   },
 
+  // See http://stackoverflow.com/a/3118280/38743
+  y: function(rgb_code) {
+    var split_code = this.split_rgb_code(rgb_code);
+    var r = split_code[0], g = split_code[1], b = split_code[2];
+    r = Math.pow(r / 255, 2.2);
+    g = Math.pow(g / 255, 2.2);
+    b = Math.pow(b / 255, 2.2);
+    return 0.2126*r + 0.7151*g + 0.0721*b;
+  },
+
+  get_color_ratio: function(rgb_code1, rgb_code2) {
+    return (this.y(rgb_code1) + 0.05) / (this.y(rgb_code2) + 0.05);
+  },
+
+  get_text_color_for_bg: function(rgb_bg) {
+    var luminance = this.y(rgb_bg); // 1 = white, 0 = black
+    if (luminance < 0.25) { // close to black background
+      return 'rgb(255, 255, 255)';
+    }
+    if (luminance > 0.75) { // close to white background
+      return 'rgb(0, 0, 0)';
+    }
+    if (luminance > 0.5) { // on the whiter side
+      return this.scale_color(rgb_bg, -1 * luminance - 1);
+    }
+    return this.scale_color(rgb_bg, luminance + 1);
+  },
+
   set_text_color_for_bg: function(el) {
     var rgb_bg = this.get_background_color(el);
     if (rgb_bg) {
-      el.css('color', this.scale_color(rgb_bg, 0.5), 'important');
+      el.css('color', this.get_text_color_for_bg(rgb_bg), 'important');
     }
   },
 
-  colourize_page: function(palette_data) {
+  colourize_bg_elements: function(hex_codes) {
     var me = this;
-    var hex_codes = palette_data.hex_codes;
     var bg_elements = this.get_background_colored_elements();
     this.colourize_elements(hex_codes, bg_elements, function(el, color) {
       el.css('background-color', color, 'important');
       me.set_text_color_for_bg(el);
     });
-    var text_elements = this.get_colored_elements();
+  },
+
+  colourize_text_elements: function(hex_codes) {
+    var me = this;
+    var text_elements = this.get_text_colored_elements();
     this.colourize_elements(hex_codes, text_elements, function(el, color) {
       me.set_text_color_for_bg(el);
     });
+  },
+
+  colourize_page: function(palette_data) {
+    var hex_codes = palette_data.hex_codes;
+    this.colourize_bg_elements(hex_codes);
+    this.colourize_text_elements(hex_codes);
   }
 };
 
