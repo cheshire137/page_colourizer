@@ -6,6 +6,8 @@ No real purpose to this extension yet, but I have high hopes of doing something 
 
 ![Screenshot of Page Colourizer](http://github.com/moneypenny/page_colourizer/raw/master/screenshot.png)
 
+![Screenshot 2 of Page Colourizer](http://github.com/moneypenny/page_colourizer/raw/master/screenshot2.png)
+
 Planned features:
 
 - Allow you to change the usage of colors on the page, so you pick which of the palette's colors is used for text, for the background, for links, etc.
