@@ -21,7 +21,8 @@ var page_colourizer = {
 
   get_colour_lovers_url_choice: function(callback) {
     var me = this;
-    chrome.storage.sync.get('include_patterns', function(opts) {
+    chrome.storage.sync.get('colourizer_options', function(opts) {
+      opts = opts.colourizer_options;
       var choices = [
         {is_pattern: false, url: me.random_palette_url}
       ];

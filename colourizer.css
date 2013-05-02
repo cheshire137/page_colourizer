@@ -67,6 +67,13 @@ body.options h1 {
 body.options .controls {
   margin-bottom: 14px;
 }
+body.options label {
+  display: inline-block;
+  vertical-align: middle;
+}
+body.options label input[type="checkbox"] {
+  vertical-align: middle;
+}
 body.options p.help-block {
   font-size: 14px;
   margin: 0 0 14px 0;
@@ -115,4 +122,7 @@ hr {
   width: 91%;
   margin: 0 2%;
   position: relative;
+}
+small {
+  font-size: 12px;
 }

@@ -115,6 +115,11 @@ var colourizer_popup = {
     $('a#shuffle-colors').blur().click(function() {
       me.on_shuffle_colors_clicked($(this), tab, data);
     });
+    $('a#options-link').click(function() {
+      console.log(chrome.extension.getURL("options.html"));
+      chrome.tabs.create({url: chrome.extension.getURL("options.html")});
+      return false;
+    });
   }
 };
 
