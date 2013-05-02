@@ -9,27 +9,19 @@ _gaq.push(['_trackPageview']);
 })();
 
 var colourizer_popup = {
-  get_favorite_link: function(palette_data) {
-    var p = $('<p class="btn-container"></p>');
+  set_favorite_link: function(palette_data) {
     var url = 'http://www.colourlovers.com/op/add/favorite/p/' +
               palette_data.palette_id;
-    var link = $('<a href="' + url + '"></a>');
-    link.addClass('btn');
-    var span = $('<span>Favorite</span>');
-    link.append(span);
-    return p.append(link);
+    $('#favorite-container a').attr('href', url);
+    $('#favorite-container').fadeIn().css('display', 'inline-block');
   },
 
-  get_love_link: function(palette_data) {
-    var p = $('<p class="btn-container"></p>');
+  set_love_link: function(palette_data) {
     var url = 'http://www.colourlovers.com/ajax/add/score/p/' +
               palette_data.palette_id;
-    var link = $('<a href="#" data-url="' + url + '" data-redirect="' +
-                 palette_data.url + '"></a>');
-    link.addClass('btn');
-    var span = $('<span>Love</span>');
-    link.append(span);
-    return p.append(link);
+    $('#love-container a').attr('data-url', url).
+                           attr('data-redirect', palette_data.url);
+    $('#love-container').fadeIn().css('display', 'inline-block');
   },
 
   on_popup_link_click: function() {
@@ -49,29 +41,27 @@ var colourizer_popup = {
     return false;
   },
 
-  get_popup_title: function(palette_data) {
-    var title = $('<span>' + palette_data.title + '</span>');
-    var link = $('<a href="' + palette_data.url + '"></a>');
-    link.append(title);
-    var img = $('<img alt="' + palette_data.title.replace(/"/g, "'") + '">');
-    img.attr('src', palette_data.image_url);
-    img.css('width', '228px');
-    img.css('height', '161px');
-    link.append(img);
-    return $('<h1></h1>').append(link);
+  set_popup_title: function(palette_data) {
+    $('h1 a span').text(palette_data.title);
+    $('h1 a').attr('href', palette_data.url);
+    $('h1 a img').attr('alt', palette_data.title.replace(/"/g, "'")).
+                  attr('src', palette_data.image_url).
+                  attr('width', '228').
+                  attr('height', '161');
+    $('h1').fadeIn();
   },
 
-  get_palette_creator: function(palette_data) {
+  set_palette_creator: function(palette_data) {
     var url = 'http://www.colourlovers.com/lover/' + palette_data.user_name;
-    var link = $('<a href="' + url + '">by ' + palette_data.user_name + '</a>');
-    return $('<h2></h2>').append(link);
+    $('h2 a').attr('href', url).text('by ' + palette_data.user_name);
+    $('h2').fadeIn();
   },
 
   populate_popup: function(palette_data) {
-    $('body').append(this.get_popup_title(palette_data)).
-              append(this.get_palette_creator(palette_data)).
-              append(this.get_favorite_link(palette_data)).
-              append(this.get_love_link(palette_data));
+    this.set_popup_title(palette_data);
+    this.set_palette_creator(palette_data);
+    this.set_favorite_link(palette_data);
+    this.set_love_link(palette_data);
     $('body a').click(this.on_popup_link_click);
   }
 };

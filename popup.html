@@ -15,6 +15,7 @@
         border-radius: 4px;
         text-align: center;
         border: 1px solid #ccc;
+        box-shadow: inset 0 0 1px 0 rgba(0, 0, 0, 0.2);
       }
       a.btn:hover, a.btn:focus {
         background: #f2f5f6;
@@ -37,7 +38,7 @@
       }
       .btn-container {
         display: inline-block;
-        width: 46%;
+        width: 45%;
         margin: 10px 2%;
       }
       h1 {
@@ -53,11 +54,36 @@
         border-top: 1px solid #c7c7c7;
         padding-top: 5px;
       }
+      .hidden {
+        display: none;
+      }
+      hr {
+        border: none;
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #fff;
+        margin: 10px 0;
+      }
     </style>
     <script src="jquery-2.0.0.min.js"></script>
     <script src="popup.js"></script>
   </head>
   <body>
+    <h1 class="hidden">
+      <a href="#" title="View this palette on ColourLovers.com">
+        <span></span>
+        <img src="" width="" height="" alt="">
+      </a>
+    </h1>
+    <h2 class="hidden">
+      <a href="#" title="View the palette creator"></a>
+    </h2>
+    <hr>
+    <div class="btn-container hidden" id="favorite-container">
+      <a href="#" class="btn" title="Favorite this palette">Favorite</a>
+    </div>
+    <div class="btn-container hidden" id="love-container">
+      <a href="#" class="btn" title="Love this palette">Love</a>
+    </div>
   </body>
 </html>
 
