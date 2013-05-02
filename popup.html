@@ -23,6 +23,13 @@
         color: #333;
         border-color: #c8d7dc;
       }
+      a.btn.disabled, a.btn.disabled:hover, a.btn.disabled:focus {
+        background: #cccccc;
+        background: linear-gradient(to bottom, #cccccc 0%, #eeeeee 100%);
+        color: #888;
+        cursor: default;
+        border-color: #ccc;
+      }
       body {
         margin: 0;
         padding: 10px;
@@ -41,9 +48,20 @@
         width: 45%;
         margin: 0 2%;
       }
+      .clearfix:after {
+        content: ".";
+        display: block;
+        clear: both;
+        visibility: hidden;
+        line-height: 0;
+        height: 0;
+      }
+      .clearfix {
+        display: inline-block;
+      }
       h1 {
         font-size: 16px;
-        margin: 0 0 10px 0;
+        margin: 0;
       }
       h1 img, h1 span {
         display: block;
@@ -51,8 +69,7 @@
       h2 {
         font-size: 12px;
         color: #909090;
-        border-top: 1px solid #c7c7c7;
-        padding-top: 5px;
+        margin: 0;
       }
       .hidden {
         display: none;
@@ -62,6 +79,14 @@
         border-top: 1px solid #eee;
         border-bottom: 1px solid #fff;
         margin: 10px 0;
+      }
+      .pull-right {
+        float: right;
+      }
+      #shuffle-colors {
+        width: 96%;
+        margin: 0 auto;
+        position: relative;
       }
     </style>
     <script src="jquery-2.0.0.min.js"></script>
@@ -74,7 +99,9 @@
         <img src="" width="" height="" alt="">
       </a>
     </h1>
-    <h2 class="hidden">
+    <hr>
+    <h2 class="hidden clearfix">
+      <img src="spinner.gif" alt="Loading..." class="hidden pull-right" width="16" height="16" id="spinner">
       <a href="#" title="View the palette creator"></a>
     </h2>
     <div class="options-container">

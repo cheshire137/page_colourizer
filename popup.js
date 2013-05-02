@@ -56,13 +56,24 @@ var colourizer_popup = {
     $('h2').fadeIn();
   },
 
-  shuffle_colors: function(tab, palette_data) {
+  send_shuffle_colors_request: function(tab, palette_data, callback) {
     chrome.tabs.sendRequest(
       tab.id,
       {greeting: 'shuffle_colors', palette_data: palette_data},
-      function() {
-      }
+      callback
     );
+  },
+
+  on_shuffle_colors_clicked: function(link, tab, palette_data) {
+    if (link.hasClass('disabled')) {
+      return;
+    }
+    link.addClass('disabled');
+    $('#spinner').show();
+    this.send_shuffle_colors_request(tab, palette_data, function() {
+      link.removeClass('disabled');
+      $('#spinner').hide();
+    });
   },
 
   populate_popup: function(tab, palette_data) {
@@ -72,8 +83,8 @@ var colourizer_popup = {
     this.set_love_link(palette_data);
     var me = this;
     $('body a').click(this.on_popup_link_click);
-    $('a#shuffle-colors').click(function() {
-      me.shuffle_colors(tab, palette_data);
+    $('a#shuffle-colors').blur().click(function() {
+      me.on_shuffle_colors_clicked($(this), tab, palette_data);
     });
   }
 };
