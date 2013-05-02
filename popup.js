@@ -10,27 +10,26 @@ _gaq.push(['_trackPageview']);
 
 var colourizer_popup = {
   get_favorite_link: function(palette_data) {
-    var fav_p = $('<p></p>');
-    var fav_url = 'http://www.colourlovers.com/op/add/favorite/p/' +
-                  palette_data.palette_id;
-    var fav_link = $('<a href="' + fav_url + '"></a>');
-    fav_link.addClass('btn');
-    var fav_text = $('<span>Favorite</span>');
-    fav_link.append(fav_text);
-    fav_p.append(fav_link);
-    return fav_p;
+    var p = $('<p class="btn-container"></p>');
+    var url = 'http://www.colourlovers.com/op/add/favorite/p/' +
+              palette_data.palette_id;
+    var link = $('<a href="' + url + '"></a>');
+    link.addClass('btn');
+    var span = $('<span>Favorite</span>');
+    link.append(span);
+    return p.append(link);
   },
 
   get_love_link: function(palette_data) {
-    var love_p = $('<p></p>');
-    var love_url = 'http://www.colourlovers.com/ajax/add/score/p/' +
-                   palette_data.palette_id;
-    var love_link = $('<a href="#" data-url="' + love_url + '"></a>');
-    love_link.addClass('btn');
-    var love_text = $('<span>Love</span>');
-    love_link.append(love_text);
-    love_p.append(love_link);
-    return love_p;
+    var p = $('<p class="btn-container"></p>');
+    var url = 'http://www.colourlovers.com/ajax/add/score/p/' +
+              palette_data.palette_id;
+    var link = $('<a href="#" data-url="' + url + '" data-redirect="' +
+                 palette_data.url + '"></a>');
+    link.addClass('btn');
+    var span = $('<span>Love</span>');
+    link.append(span);
+    return p.append(link);
   },
 
   on_popup_link_click: function() {
@@ -41,7 +40,7 @@ var colourizer_popup = {
       var req = new XMLHttpRequest();
       req.open("GET", url, true);
       req.onload = function(e) {
-        chrome.tabs.create({url: palette_data.url});
+        chrome.tabs.create({url: a.attr('data-redirect')});
       }.bind(this);
       req.send(null);
     } else {
@@ -63,7 +62,9 @@ var colourizer_popup = {
   },
 
   get_palette_creator: function(palette_data) {
-    return $('<h2>by ' + palette_data.user_name + '</h2>');
+    var url = 'http://www.colourlovers.com/lover/' + palette_data.user_name;
+    var link = $('<a href="' + url + '">by ' + palette_data.user_name + '</a>');
+    return $('<h2></h2>').append(link);
   },
 
   populate_popup: function(palette_data) {
