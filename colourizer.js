@@ -103,9 +103,8 @@ var page_colourizer = {
     return 'rgb(' + r + ', ' + g + ', ' + b + ')';
   },
 
-  colourize_elements: function(hex_codes, el_hash, callback) {
+  colourize_elements: function(hex_codes, el_hash, color_index, callback) {
     var num_colors = hex_codes.length;
-    var color_index = Math.floor(Math.random() * num_colors);
     for (var orig_color in el_hash) {
       var new_color = hex_codes[color_index];
       var elements = el_hash[orig_color];
@@ -163,28 +162,28 @@ var page_colourizer = {
     }
   },
 
-  colourize_bg_elements: function(hex_codes) {
+  colourize_bg_elements: function(hex_codes, idx) {
     var me = this;
-    var bg_elements = this.get_background_colored_elements();
-    this.colourize_elements(hex_codes, bg_elements, function(el, color) {
+    var elements = this.get_background_colored_elements();
+    this.colourize_elements(hex_codes, elements, idx, function(el, color) {
       el.css('background-color', color, 'important');
       el.css('background-image', 'none', 'important');
       me.set_text_color_for_bg(el);
     });
   },
 
-  colourize_text_elements: function(hex_codes) {
+  colourize_text_elements: function(hex_codes, idx) {
     var me = this;
-    var text_elements = this.get_text_colored_elements();
-    this.colourize_elements(hex_codes, text_elements, function(el, color) {
+    var elements = this.get_text_colored_elements();
+    this.colourize_elements(hex_codes, elements, idx, function(el, color) {
       me.set_text_color_for_bg(el);
     });
   },
 
-  colourize_border_elements: function(hex_codes) {
+  colourize_border_elements: function(hex_codes, idx) {
     var me = this;
-    var border_elements = this.get_bordered_elements();
-    this.colourize_elements(hex_codes, border_elements, function(el, color) {
+    var elements = this.get_bordered_elements();
+    this.colourize_elements(hex_codes, elements, idx, function(el, color) {
       var rgb_bg = me.get_background_color(el);
       var border_color;
       if (rgb_bg) {
@@ -196,10 +195,10 @@ var page_colourizer = {
     });
   },
 
-  colourize_text_shadow_elements: function(hex_codes) {
+  colourize_text_shadow_elements: function(hex_codes, idx) {
     var me = this;
-    var shadow_elements = this.get_text_shadowed_elements();
-    this.colourize_elements(hex_codes, shadow_elements, function(el, color) {
+    var elements = this.get_text_shadowed_elements();
+    this.colourize_elements(hex_codes, elements, idx, function(el, color) {
       var shadow = el.css('text-shadow');
       var shadow_props = shadow.split(')')[1];
       var rgb_bg = me.get_background_color(el);
@@ -213,24 +212,25 @@ var page_colourizer = {
     });
   },
 
-  colourize_page: function(palette_data) {
+  colourize_page: function(palette_data, idx) {
     var hex_codes = palette_data.hex_codes;
-    this.colourize_bg_elements(hex_codes);
-    this.colourize_text_elements(hex_codes);
-    this.colourize_border_elements(hex_codes);
-    this.colourize_text_shadow_elements(hex_codes);
+    this.colourize_bg_elements(hex_codes, idx);
+    this.colourize_text_elements(hex_codes, idx);
+    this.colourize_border_elements(hex_codes, idx);
+    this.colourize_text_shadow_elements(hex_codes, idx);
   }
 };
 
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
   if (request.greeting == 'load_random_palette') {
     page_colourizer.load_random_palette(function(palette_data) {
-      sendResponse(palette_data);
-      page_colourizer.colourize_page(palette_data);
+      sendResponse(palette_data, 0);
+      page_colourizer.colourize_page(palette_data, 0);
     });
   } else if (request.greeting == 'shuffle_colors') {
-    page_colourizer.colourize_page(request.palette_data);
-    sendResponse();
+    var new_index = (request.index + 1) % request.palette_data.hex_codes.length;
+    page_colourizer.colourize_page(request.palette_data, new_index);
+    sendResponse(new_index);
   } else {
     sendResponse({});
   }
