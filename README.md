@@ -20,8 +20,6 @@ Planned features:
 
 - Add a Colour Frenzy option that will colorize every page automatically, as soon as it loads.
 
-- Add Favorite, Love links for each palette.
-
 # Credits
 
 This is built using the [ColourLovers API](http://www.colourlovers.com/api) and [jQuery](http://jquery.com/).
