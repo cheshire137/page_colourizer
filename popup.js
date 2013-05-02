@@ -26,18 +26,19 @@ _gaq.push(['_trackPageview']);
 })();
 
 var colourizer_popup = {
-  set_favorite_link: function(palette_data) {
+  set_favorite_link: function(data) {
     var url = 'http://www.colourlovers.com/op/add/favorite/p/' +
-              palette_data.palette_id;
+              data.id;
     $('#favorite-container a').attr('href', url);
     $('#favorite-container').fadeIn().css('display', 'inline-block');
   },
 
-  set_love_link: function(palette_data) {
-    var url = 'http://www.colourlovers.com/ajax/add/score/p/' +
-              palette_data.palette_id;
+  set_love_link: function(data) {
+    var context = data.is_pattern ? 'n' : 'p';
+    var url = 'http://www.colourlovers.com/ajax/add/score/' + context + '/' +
+              data.id;
     $('#love-container a').attr('href', url).
-                           attr('data-redirect', palette_data.url);
+                           attr('data-redirect', data.url);
     $('#love-container').fadeIn().css('display', 'inline-block');
   },
 
@@ -57,31 +58,32 @@ var colourizer_popup = {
     return false;
   },
 
-  set_popup_title: function(palette_data) {
-    $('h1 a span').text(palette_data.title);
-    $('h1 a').attr('href', palette_data.url);
-    $('h1 a img').attr('alt', palette_data.title.replace(/"/g, "'")).
-                  attr('src', palette_data.image_url).
+  set_popup_title: function(data) {
+    $('h1 a span#title').text(data.title);
+    $('h1 a').attr('href', data.url);
+    $('h1 a img').attr('alt', data.title.replace(/"/g, "'")).
+                  attr('src', data.image_url).
                   attr('width', '228').
                   attr('height', '161');
+    $('h1 span#type').text(data.is_pattern ? 'Pattern' : 'Palette');
     $('h1').fadeIn();
   },
 
-  set_palette_creator: function(palette_data) {
-    var url = 'http://www.colourlovers.com/lover/' + palette_data.user_name;
-    $('h2 a').attr('href', url).text('by ' + palette_data.user_name);
+  set_palette_creator: function(data) {
+    var url = 'http://www.colourlovers.com/lover/' + data.user_name;
+    $('h2 a').attr('href', url).text('by ' + data.user_name);
     $('h2').fadeIn();
   },
 
-  send_shuffle_colors_request: function(tab, palette_data, idx, callback) {
+  send_shuffle_colors_request: function(tab, data, idx, callback) {
     chrome.tabs.sendRequest(
       tab.id,
-      {greeting: 'shuffle_colors', palette_data: palette_data, index: idx},
+      {greeting: 'shuffle_colors', data: data, index: idx},
       callback
     );
   },
 
-  on_shuffle_colors_clicked: function(link, tab, palette_data) {
+  on_shuffle_colors_clicked: function(link, tab, data) {
     if (link.hasClass('disabled')) {
       return;
     }
@@ -89,7 +91,7 @@ var colourizer_popup = {
     $('#spinner').show();
     var cur_index = parseInt(link.attr('data-index'), 10);
     this.send_shuffle_colors_request(
-      tab, palette_data, cur_index,
+      tab, data, cur_index,
       function(new_index) {
         link.attr('data-index', new_index);
         link.removeClass('disabled');
@@ -102,16 +104,16 @@ var colourizer_popup = {
     $('a#shuffle_colors').attr('data-index', index);
   },
 
-  populate_popup: function(tab, palette_data, idx) {
-    this.set_popup_title(palette_data);
-    this.set_palette_creator(palette_data);
-    this.set_favorite_link(palette_data);
-    this.set_love_link(palette_data);
+  populate_popup: function(tab, data, idx) {
+    this.set_popup_title(data);
+    this.set_palette_creator(data);
+    this.set_favorite_link(data);
+    this.set_love_link(data);
     this.set_shuffle_colors_index(idx);
-    var me = this;
     $('body a').click(this.on_popup_link_click);
+    var me = this;
     $('a#shuffle-colors').blur().click(function() {
-      me.on_shuffle_colors_clicked($(this), tab, palette_data);
+      me.on_shuffle_colors_clicked($(this), tab, data);
     });
   }
 };
@@ -121,8 +123,8 @@ document.addEventListener('DOMContentLoaded', function() {
     chrome.tabs.sendRequest(
       tab.id,
       {greeting: 'load_random_palette'},
-      function(palette_data, idx) {
-        colourizer_popup.populate_popup(tab, palette_data, idx);
+      function(data, idx) {
+        colourizer_popup.populate_popup(tab, data, idx);
       }
     );
   });

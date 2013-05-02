@@ -17,31 +17,37 @@
 
 var page_colourizer = {
   random_palette_url: 'http://www.colourlovers.com/api/palettes/random',
+  random_pattern_url: 'http://www.colourlovers.com/api/patterns/random',
 
   load_random_palette: function(callback) {
     var req = new XMLHttpRequest();
-    req.open("GET", this.random_palette_url, true);
+    var choices = [
+      {is_pattern: true, url: this.random_pattern_url},
+      {is_pattern: false, url: this.random_palette_url}
+    ];
+    var choice = choices[Math.floor(Math.random() * choices.length)];
+    req.open("GET", choice.url, true);
     req.onload = function(e) {
-      this.get_palette_data(e, callback);
+      this.get_colour_lovers_data(e, choice.is_pattern, callback);
     }.bind(this);
     req.send(null);
   },
 
-  get_palette_data: function(e, callback) {
+  get_colour_lovers_data: function(e, is_pattern, callback) {
     var xml = e.target.responseXML;
     var hex_nodes = xml.querySelectorAll('hex');
     var title = xml.querySelector('title').textContent;
     var url = xml.querySelector('url').textContent;
     var image_url = xml.querySelector('imageUrl').textContent;
     var user_name = xml.querySelector('userName').textContent;
-    var palette_id = xml.querySelector('id').textContent;
+    var id = xml.querySelector('id').textContent;
     var hex_codes = [];
     for (var i=0; i<hex_nodes.length; i++) {
       hex_codes[i] = '#' + hex_nodes[i].textContent;
     }
     callback({hex_codes: hex_codes, title: title, url: url,
-              image_url: image_url, user_name: user_name,
-              palette_id: palette_id});
+              image_url: image_url, user_name: user_name, id: id,
+              is_pattern: is_pattern});
   },
 
   has_color: function(rgb_code) {
@@ -263,24 +269,34 @@ var page_colourizer = {
     });
   },
 
-  colourize_page: function(palette_data, idx) {
-    var hex_codes = palette_data.hex_codes;
+  set_bg_image: function(data) {
+    if (data.is_pattern) {
+      $('body').css('background-image', 'url("' + data.image_url + '")',
+                    'important').
+                css('background-repeat', 'repeat', 'important').
+                css('background-position', 'left top', 'important');
+    }
+  },
+
+  colourize_page: function(data, idx) {
+    var hex_codes = data.hex_codes;
     this.colourize_bg_elements(hex_codes, idx);
     this.colourize_text_elements(hex_codes, idx);
     this.colourize_border_elements(hex_codes, idx);
     this.colourize_text_shadow_elements(hex_codes, idx);
+    this.set_bg_image(data);
   }
 };
 
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
   if (request.greeting == 'load_random_palette') {
-    page_colourizer.load_random_palette(function(palette_data) {
-      sendResponse(palette_data, 0);
-      page_colourizer.colourize_page(palette_data, 0);
+    page_colourizer.load_random_palette(function(data) {
+      sendResponse(data, 0);
+      page_colourizer.colourize_page(data, 0);
     });
   } else if (request.greeting == 'shuffle_colors') {
-    var new_index = (request.index + 1) % request.palette_data.hex_codes.length;
-    page_colourizer.colourize_page(request.palette_data, new_index);
+    var new_index = (request.index + 1) % request.data.hex_codes.length;
+    page_colourizer.colourize_page(request.data, new_index);
     sendResponse(new_index);
   } else {
     sendResponse({});
