@@ -55,7 +55,14 @@ var page_colourizer = {
   },
 
   get_background_colored_elements: function() {
-    return this.get_colored_elements('background-color', this.has_color);
+    var me = this;
+    return this.get_colored_elements('background', function(prop_value) {
+      var rgb_code = prop_value.split(')')[0] + ')';
+      if (me.has_color(rgb_code)) {
+        return true;
+      }
+      return prop_value.indexOf('url(') !== -1;
+    });
   },
 
   get_text_colored_elements: function() {
@@ -103,16 +110,16 @@ var page_colourizer = {
     return 'rgb(' + r + ', ' + g + ', ' + b + ')';
   },
 
-  colourize_elements: function(hex_codes, el_hash, color_index, callback) {
+  colourize_elements: function(hex_codes, el_hash, idx, callback) {
     var num_colors = hex_codes.length;
     for (var orig_color in el_hash) {
-      var new_color = hex_codes[color_index];
+      var new_color = hex_codes[idx];
       var elements = el_hash[orig_color];
       for (var i=0; i<elements.length; i++) {
         var selector = $(elements[i]);
         callback(selector, new_color);
       }
-      color_index = (color_index+1) % num_colors;
+      idx = (idx + 1) % num_colors;
     }
   },
 
@@ -162,11 +169,25 @@ var page_colourizer = {
     }
   },
 
+  parent_has_same_background_color: function(el, color) {
+    var parent = el.parent();
+    if (parent) {
+      var parent_bg = this.get_background_color(parent);
+      return parent_bg !== undefined && parent_bg == color;
+    }
+    return false;
+  },
+
   colourize_bg_elements: function(hex_codes, idx) {
     var me = this;
     var elements = this.get_background_colored_elements();
     this.colourize_elements(hex_codes, elements, idx, function(el, color) {
       el.css('background-color', color, 'important');
+      color = el.css('background-color');
+      if (me.parent_has_same_background_color(el, color)) {
+        color = me.scale_color(color, 0.5);
+        el.css('background-color', color, 'important');
+      }
       el.css('background-image', 'none', 'important');
       me.set_text_color_for_bg(el);
     });
