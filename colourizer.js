@@ -316,3 +316,12 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
     sendResponse({});
   }
 });
+
+chrome.storage.sync.get('colourizer_options', function(opts) {
+  opts = opts.colourizer_options;
+  if (opts.colour_frenzy) {
+    page_colourizer.load_random_palette(function(data) {
+      page_colourizer.colourize_page(data, 0);
+    });
+  }
+});
