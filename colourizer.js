@@ -223,11 +223,14 @@ var page_colourizer = {
 };
 
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-  if (request.greeting == "load_random_palette") {
+  if (request.greeting == 'load_random_palette') {
     page_colourizer.load_random_palette(function(palette_data) {
       sendResponse(palette_data);
       page_colourizer.colourize_page(palette_data);
     });
+  } else if (request.greeting == 'shuffle_colors') {
+    page_colourizer.colourize_page(request.palette_data);
+    sendResponse();
   } else {
     sendResponse({});
   }

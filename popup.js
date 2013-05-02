@@ -19,7 +19,7 @@ var colourizer_popup = {
   set_love_link: function(palette_data) {
     var url = 'http://www.colourlovers.com/ajax/add/score/p/' +
               palette_data.palette_id;
-    $('#love-container a').attr('data-url', url).
+    $('#love-container a').attr('href', url).
                            attr('data-redirect', palette_data.url);
     $('#love-container').fadeIn().css('display', 'inline-block');
   },
@@ -27,15 +27,14 @@ var colourizer_popup = {
   on_popup_link_click: function() {
     var a = $(this);
     var url = a.attr('href');
-    if (url == '#') {
-      url = a.attr('data-url');
+    if (a[0].hasAttribute('data-redirect')) {
       var req = new XMLHttpRequest();
       req.open("GET", url, true);
       req.onload = function(e) {
         chrome.tabs.create({url: a.attr('data-redirect')});
       }.bind(this);
       req.send(null);
-    } else {
+    } else if (url != '#') {
       chrome.tabs.create({url: url});
     }
     return false;
@@ -57,12 +56,25 @@ var colourizer_popup = {
     $('h2').fadeIn();
   },
 
-  populate_popup: function(palette_data) {
+  shuffle_colors: function(tab, palette_data) {
+    chrome.tabs.sendRequest(
+      tab.id,
+      {greeting: 'shuffle_colors', palette_data: palette_data},
+      function() {
+      }
+    );
+  },
+
+  populate_popup: function(tab, palette_data) {
     this.set_popup_title(palette_data);
     this.set_palette_creator(palette_data);
     this.set_favorite_link(palette_data);
     this.set_love_link(palette_data);
+    var me = this;
     $('body a').click(this.on_popup_link_click);
+    $('a#shuffle-colors').click(function() {
+      me.shuffle_colors(tab, palette_data);
+    });
   }
 };
 
@@ -70,9 +82,9 @@ document.addEventListener('DOMContentLoaded', function() {
   chrome.tabs.getSelected(null, function(tab) {
     chrome.tabs.sendRequest(
       tab.id,
-      {greeting: "load_random_palette"},
+      {greeting: 'load_random_palette'},
       function(palette_data) {
-        colourizer_popup.populate_popup(palette_data);
+        colourizer_popup.populate_popup(tab, palette_data);
       }
     );
   });
