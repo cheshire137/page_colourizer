@@ -4,7 +4,7 @@
   "description": "This grabs a random color palette from ColourLovers.com and applies it to the page loaded in the current tab.",
   "version": "0.0.0.2",
   "permissions": [
-    "tabs", "<all_urls>", "background"
+    "tabs", "<all_urls>", "background", "storage"
   ],
   "content_scripts": [
     {
@@ -13,6 +13,7 @@
       "js": ["jquery-2.0.0.min.js", "colourizer.js"]
     }
   ],
+  "options_page": "options.html",
   "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
   "browser_action": {
     "default_icon": "icon16.png",

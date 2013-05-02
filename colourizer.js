@@ -19,18 +19,31 @@ var page_colourizer = {
   random_palette_url: 'http://www.colourlovers.com/api/palettes/random',
   random_pattern_url: 'http://www.colourlovers.com/api/patterns/random',
 
+  get_colour_lovers_url_choice: function(callback) {
+    var me = this;
+    chrome.storage.sync.get('include_patterns', function(opts) {
+      var choices = [
+        {is_pattern: false, url: me.random_palette_url}
+      ];
+      if (opts.include_patterns) {
+        choices = choices.concat([
+          {is_pattern: true, url: me.random_pattern_url}
+        ]);
+      }
+      callback(choices[Math.floor(Math.random() * choices.length)]);
+    });
+  },
+
   load_random_palette: function(callback) {
-    var req = new XMLHttpRequest();
-    var choices = [
-      {is_pattern: true, url: this.random_pattern_url},
-      {is_pattern: false, url: this.random_palette_url}
-    ];
-    var choice = choices[Math.floor(Math.random() * choices.length)];
-    req.open("GET", choice.url, true);
-    req.onload = function(e) {
-      this.get_colour_lovers_data(e, choice.is_pattern, callback);
-    }.bind(this);
-    req.send(null);
+    var me = this;
+    this.get_colour_lovers_url_choice(function(choice) {
+      var req = new XMLHttpRequest();
+      req.open('GET', choice.url, true);
+      req.onload = function(e) {
+        me.get_colour_lovers_data(e, choice.is_pattern, callback);
+      }.bind(me);
+      req.send(null);
+    });
   },
 
   get_colour_lovers_data: function(e, is_pattern, callback) {
