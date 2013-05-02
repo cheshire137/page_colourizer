@@ -47,7 +47,7 @@ var page_colourizer = {
     $('*').each(function() {
       var el = $(this);
       var prop_value = el.css(prop);
-      if (should_include(prop_value)) {
+      if (should_include(el, prop_value)) {
         add_to_hash(prop_value, el);
       }
     });
@@ -56,26 +56,39 @@ var page_colourizer = {
 
   get_background_colored_elements: function() {
     var me = this;
-    return this.get_colored_elements('background', function(prop_value) {
+    return this.get_colored_elements('background', function(el, prop_value) {
       var rgb_code = prop_value.split(')')[0] + ')';
       if (me.has_color(rgb_code)) {
         return true;
       }
-      return prop_value.indexOf('url(') !== -1;
+      var has_bg_image = prop_value.indexOf('url(') !== -1;
+      var text_indent = parseInt(el.css('text-indent').replace(/px$/, ''), 10);
+      var has_neg_text_indent = text_indent < 0;
+      var has_bg_position = el.css('background-position') !== '0% 0%';
+      // Common to have images that replace text with a negative text-indent,
+      // so assume background image with negative text indent means it's a logo
+      // and we should leave it alone.
+      return has_bg_image && !has_neg_text_indent && !has_bg_position;
     });
   },
 
   get_text_colored_elements: function() {
-    return this.get_colored_elements('color', this.has_color);
+    var me = this;
+    return this.get_colored_elements('color', function(el, prop_value) {
+      return me.has_color(prop_value);
+    });
   },
 
   get_bordered_elements: function() {
-    return this.get_colored_elements('border-color', this.has_color);
+    var me = this;
+    return this.get_colored_elements('border-color', function(el, prop_value) {
+      return me.has_color(prop_value);
+    });
   },
 
   get_text_shadowed_elements: function() {
     var me = this;
-    return this.get_colored_elements('text-shadow', function(prop_value) {
+    return this.get_colored_elements('text-shadow', function(el, prop_value) {
       if (prop_value == 'none') {
         return false;
       }
