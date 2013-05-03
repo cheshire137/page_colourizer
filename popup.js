@@ -66,7 +66,7 @@ var colourizer_popup = {
                   attr('width', data.is_pattern ? '200' : '228').
                   attr('height', data.is_pattern ? '200' : '161');
     $('h1 span#type').text(data.is_pattern ? 'Pattern' : 'Palette');
-    $('h1').fadeIn();
+    $('h1, .options-container').fadeIn();
   },
 
   set_palette_creator: function(data) {
@@ -75,30 +75,41 @@ var colourizer_popup = {
     $('h2').fadeIn();
   },
 
-  send_shuffle_colors_request: function(tab, data, callback) {
-    chrome.tabs.sendRequest(
-      tab.id,
-      {greeting: 'shuffle_colors', data: data},
-      callback
-    );
+  send_shuffle_colors_request: function(tab, callback) {
+    chrome.tabs.sendRequest(tab.id, {greeting: 'shuffle_colors'}, callback);
   },
 
-  on_shuffle_colors_clicked: function(link, tab, data) {
+  send_new_colors_request: function(tab, callback) {
+    chrome.tabs.sendRequest(tab.id, {greeting: 'new_colors'}, callback);
+  },
+
+  on_shuffle_colors_clicked: function(link, tab) {
     if (link.hasClass('disabled')) {
       return;
     }
     link.addClass('disabled');
     $('#spinner').show();
-    this.send_shuffle_colors_request(
-      tab, data,
-      function() {
-        link.removeClass('disabled');
-        $('#spinner').hide();
-      }
-    );
+    this.send_shuffle_colors_request(tab, function() {
+      link.removeClass('disabled');
+      $('#spinner').hide();
+    });
   },
 
-  populate_popup: function(tab, data, idx) {
+  on_new_colors_clicked: function(link, tab) {
+    if (link.hasClass('disabled')) {
+      return;
+    }
+    link.addClass('disabled');
+    $('#spinner').show();
+    var me = this;
+    this.send_new_colors_request(tab, function(data) {
+      me.populate_popup(tab, data);
+      link.removeClass('disabled');
+      $('#spinner').hide();
+    });
+  },
+
+  populate_popup: function(tab, data) {
     this.set_popup_title(data);
     this.set_palette_creator(data);
     this.set_favorite_link(data);
@@ -106,7 +117,10 @@ var colourizer_popup = {
     $('body a').click(this.on_popup_link_click);
     var me = this;
     $('a#shuffle-colors').blur().click(function() {
-      me.on_shuffle_colors_clicked($(this), tab, data);
+      me.on_shuffle_colors_clicked($(this), tab);
+    });
+    $('a#new-colors').click(function() {
+      me.on_new_colors_clicked($(this), tab);
     });
     $('a#options-link').click(function() {
       chrome.tabs.create({url: chrome.extension.getURL("options.html")});
@@ -120,8 +134,8 @@ document.addEventListener('DOMContentLoaded', function() {
     chrome.tabs.sendRequest(
       tab.id,
       {greeting: 'popup_opened'},
-      function(data, idx) {
-        colourizer_popup.populate_popup(tab, data, idx);
+      function(data) {
+        colourizer_popup.populate_popup(tab, data);
       }
     );
   });

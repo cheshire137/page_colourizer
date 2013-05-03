@@ -151,11 +151,6 @@ label + label {
 .pull-right {
   float: right;
 }
-#shuffle-colors {
-  width: 91%;
-  margin: 0 2%;
-  position: relative;
-}
 small {
   font-size: 12px;
 }

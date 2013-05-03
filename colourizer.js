@@ -19,6 +19,23 @@ var page_colourizer = {
   random_palette_url: 'http://www.colourlovers.com/api/palettes/random',
   random_pattern_url: 'http://www.colourlovers.com/api/patterns/random',
 
+  store_info: function(data, index, callback) {
+    var type = data.is_pattern ? 'pattern' : 'palette';
+    index = parseInt(index, 10);
+    data = {id: data.id, index: index, type: type, hex_codes: data.hex_codes,
+            title: data.title, url: data.url, image_url: data.image_url,
+            user_name: data.user_name};
+    chrome.storage.sync.set({'colourizer_data': data}, function() {
+      callback();
+    });
+  },
+
+  get_stored_info: function(callback) {
+    chrome.storage.sync.get('colourizer_data', function(data) {
+      callback(data.colourizer_data);
+    });
+  },
+
   get_color_sources: function(callback) {
     var me = this;
     chrome.storage.sync.get('colourizer_options', function(opts) {
@@ -312,23 +329,6 @@ var page_colourizer = {
     }
   },
 
-  store_info: function(data, index) {
-    $('body').attr('data-colourlovers-id', data.id);
-    $('body').attr('data-colourlovers-type',
-                   data.is_pattern ? 'pattern' : 'palette');
-    $('body').attr('data-colourlovers-index', index);
-  },
-
-  get_stored_info: function() {
-    var id = $('body').attr('data-colourlovers-id');
-    var type = $('body').attr('data-colourlovers-type');
-    var index = $('body').attr('data-colourlovers-index');
-    if (id && type && index) {
-      return {id: id, type: type, index: parseInt(index, 10)};
-    }
-    return undefined;
-  },
-
   colourize_page: function(data, idx) {
     var hex_codes = data.hex_codes;
     this.colourize_bg_elements(hex_codes, idx);
@@ -339,38 +339,61 @@ var page_colourizer = {
   },
 
   on_popup_opened: function(callback) {
-    var info = this.get_stored_info();
     var me = this;
-    if (info) {
-      this.load_cl_data_by_id(info, function(data) {
-        callback(data, info.index);
-      });
-    } else {
-      this.load_random_cl_data(function(data) {
-        var index = 0;
-        callback(data, index);
-        me.colourize_page(data, index);
-        me.store_info(data, index);
-      });
-    }
+    this.get_stored_info(function(info) {
+      if (info) {
+        me.load_cl_data_by_id(info, function(data) {
+          callback(data);
+        });
+      } else {
+        me.load_random_cl_data(function(data) {
+          var index = 0;
+          callback(data);
+          me.colourize_page(data, index);
+          me.store_info(data, index, function() {
+            // no-op
+          });
+        });
+      }
+    });
   },
 
-  shuffle_colors: function(data) {
-    var info = this.get_stored_info();
-    var new_index = (info.index + 1) % data.hex_codes.length;
-    this.colourize_page(data, new_index);
-    this.store_info(data, new_index);
+  on_new_colors_requested: function(callback) {
+    var me = this;
+    this.load_random_cl_data(function(data) {
+      var index = 0;
+      callback(data);
+      me.colourize_page(data, index);
+      me.store_info(data, index, function() {
+        // no-op
+      });
+    });
+  },
+
+  shuffle_colors: function() {
+    var me = this;
+    this.get_stored_info(function(data) {
+      var new_index = (data.index + 1) % data.hex_codes.length;
+      me.colourize_page(data, new_index);
+      me.store_info(data, new_index, function() {
+        // no-op
+      });
+    });
   }
 };
 
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
   if (request.greeting == 'popup_opened') {
-    page_colourizer.on_popup_opened(function(data, idx) {
-      sendResponse(data, idx);
+    page_colourizer.on_popup_opened(function(data) {
+      sendResponse(data);
     });
   } else if (request.greeting == 'shuffle_colors') {
-    page_colourizer.shuffle_colors(request.data);
+    page_colourizer.shuffle_colors();
     sendResponse();
+  } else if (request.greeting == 'new_colors') {
+    page_colourizer.on_new_colors_requested(function(data) {
+      sendResponse(data);
+    });
   } else {
     sendResponse({});
   }
