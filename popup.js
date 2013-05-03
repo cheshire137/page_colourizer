@@ -63,8 +63,8 @@ var colourizer_popup = {
     $('h1 a').attr('href', data.url);
     $('h1 a img').attr('alt', data.title.replace(/"/g, "'")).
                   attr('src', data.image_url).
-                  attr('width', '228').
-                  attr('height', '161');
+                  attr('width', data.is_pattern ? '200' : '228').
+                  attr('height', data.is_pattern ? '200' : '161');
     $('h1 span#type').text(data.is_pattern ? 'Pattern' : 'Palette');
     $('h1').fadeIn();
   },

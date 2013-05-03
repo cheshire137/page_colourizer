@@ -19,35 +19,45 @@ var page_colourizer = {
   random_palette_url: 'http://www.colourlovers.com/api/palettes/random',
   random_pattern_url: 'http://www.colourlovers.com/api/patterns/random',
 
-  get_colour_lovers_url_choice: function(callback) {
+  get_color_sources: function(callback) {
     var me = this;
     chrome.storage.sync.get('colourizer_options', function(opts) {
       opts = opts.colourizer_options;
-      var choices = [
-        {is_pattern: false, url: me.random_palette_url}
-      ];
-      if (opts.include_patterns) {
-        choices = choices.concat([
+      var sources = [];
+      if (opts.color_source != 'patterns_only') {
+        sources = sources.concat([
+          {is_pattern: false, url: me.random_palette_url}
+        ]);
+      }
+      if (opts.color_source == 'palettes_and_patterns' ||
+          opts.color_source == 'patterns_only') {
+        sources = sources.concat([
           {is_pattern: true, url: me.random_pattern_url}
         ]);
       }
-      callback(choices[Math.floor(Math.random() * choices.length)]);
+      callback(sources);
+    });
+  },
+
+  get_color_source: function(callback) {
+    this.get_color_sources(function(sources) {
+      callback(sources[Math.floor(Math.random() * sources.length)]);
     });
   },
 
   load_random_palette: function(callback) {
     var me = this;
-    this.get_colour_lovers_url_choice(function(choice) {
+    this.get_color_source(function(source) {
       var req = new XMLHttpRequest();
-      req.open('GET', choice.url, true);
+      req.open('GET', source.url, true);
       req.onload = function(e) {
-        me.get_colour_lovers_data(e, choice.is_pattern, callback);
+        me.extract_cl_data_from_xml(e, source.is_pattern, callback);
       }.bind(me);
       req.send(null);
     });
   },
 
-  get_colour_lovers_data: function(e, is_pattern, callback) {
+  extract_cl_data_from_xml: function(e, is_pattern, callback) {
     var xml = e.target.responseXML;
     var hex_nodes = xml.querySelectorAll('hex');
     var title = xml.querySelector('title').textContent;

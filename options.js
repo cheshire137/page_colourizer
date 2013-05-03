@@ -16,10 +16,10 @@
  */
 
 function save_options() {
-  var include_patterns = $('#include_patterns').is(':checked');
+  var color_source = $('input[name="color_source"]:checked').val();
   var colour_frenzy = $('#colour_frenzy').is(':checked');
   var status_area = $('#status-message');
-  var options = {include_patterns: include_patterns,
+  var options = {color_source: color_source,
                  colour_frenzy: colour_frenzy};
   chrome.storage.sync.set({'colourizer_options': options}, function() {
     status_area.text('Okay, got it!').fadeIn(function() {
@@ -33,8 +33,12 @@ function save_options() {
 function restore_options() {
   chrome.storage.sync.get('colourizer_options', function(opts) {
     opts = opts.colourizer_options;
-    if (opts.include_patterns) {
-      $('#include_patterns').attr('checked', 'checked');
+    if (opts.color_source) {
+      var selector = 'input[name="color_source"][value="' + opts.color_source +
+                     '"]';
+      $(selector).attr('checked', 'checked');
+    } else {
+      $('#palettes_only').attr('checked', 'checked');
     }
     if (opts.colour_frenzy) {
       $('#colour_frenzy').attr('checked', 'checked');
@@ -43,5 +47,7 @@ function restore_options() {
 }
 
 document.addEventListener('DOMContentLoaded', restore_options);
-$('#include_patterns').on('change', save_options);
+$('#palettes_only').on('change', save_options);
+$('#palettes_and_patterns').on('change', save_options);
+$('#patterns_only').on('change', save_options);
 $('#colour_frenzy').on('change', save_options);
