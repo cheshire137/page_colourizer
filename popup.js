@@ -109,23 +109,38 @@ var colourizer_popup = {
     });
   },
 
+  setup_shuffle_colors_button: function(tab) {
+    var me = this;
+    $('a#shuffle-colors').click(function() {
+      me.on_shuffle_colors_clicked($(this), tab);
+      return false;
+    });
+  },
+
+  setup_new_colors_button: function(tab) {
+    var me = this;
+    $('a#new-colors').click(function() {
+      me.on_new_colors_clicked($(this), tab);
+      return false;
+    });
+  },
+
+  setup_options_link: function() {
+    $('a#options-link').blur().click(function() {
+      chrome.tabs.create({url: chrome.extension.getURL("options.html")});
+      return false;
+    });
+  },
+
   populate_popup: function(tab, data) {
     this.set_popup_title(data);
     this.set_palette_creator(data);
     this.set_favorite_link(data);
     this.set_love_link(data);
     $('body a').click(this.on_popup_link_click);
-    var me = this;
-    $('a#shuffle-colors').blur().click(function() {
-      me.on_shuffle_colors_clicked($(this), tab);
-    });
-    $('a#new-colors').click(function() {
-      me.on_new_colors_clicked($(this), tab);
-    });
-    $('a#options-link').click(function() {
-      chrome.tabs.create({url: chrome.extension.getURL("options.html")});
-      return false;
-    });
+    this.setup_shuffle_colors_button(tab);
+    this.setup_new_colors_button(tab);
+    this.setup_options_link();
   }
 };
 

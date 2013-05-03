@@ -348,10 +348,9 @@ var page_colourizer = {
       } else {
         me.load_random_cl_data(function(data) {
           var index = 0;
-          callback(data);
           me.colourize_page(data, index);
           me.store_info(data, index, function() {
-            // no-op
+            callback(data);
           });
         });
       }
@@ -362,21 +361,20 @@ var page_colourizer = {
     var me = this;
     this.load_random_cl_data(function(data) {
       var index = 0;
-      callback(data);
       me.colourize_page(data, index);
       me.store_info(data, index, function() {
-        // no-op
+        callback(data);
       });
     });
   },
 
-  shuffle_colors: function() {
+  shuffle_colors: function(callback) {
     var me = this;
     this.get_stored_info(function(data) {
       var new_index = (data.index + 1) % data.hex_codes.length;
       me.colourize_page(data, new_index);
       me.store_info(data, new_index, function() {
-        // no-op
+        callback();
       });
     });
   }
@@ -388,8 +386,9 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
       sendResponse(data);
     });
   } else if (request.greeting == 'shuffle_colors') {
-    page_colourizer.shuffle_colors();
-    sendResponse();
+    page_colourizer.shuffle_colors(function() {
+      sendResponse();
+    });
   } else if (request.greeting == 'new_colors') {
     page_colourizer.on_new_colors_requested(function(data) {
       sendResponse(data);
@@ -402,7 +401,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 chrome.storage.sync.get('colourizer_options', function(opts) {
   opts = opts.colourizer_options;
   if (opts.colour_frenzy) {
-    page_colourizer.on_popup_opened(function(data, idx) {
+    page_colourizer.on_new_colors_requested(function(data) {
       // no-op
     });
   }

@@ -159,3 +159,9 @@ small {
   width: 100%;
   top: 2.3em;
 }
+#type {
+  font-variant: small-caps;
+  font-weight: 300;
+  font-size: 14px;
+  color: #888;
+}
