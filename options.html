@@ -5,44 +5,46 @@
     <link rel="stylesheet" type="text/css" media="screen" href="colourizer.css">
   </head>
   <body class="options">
-    <div class="header">
-      <h1>Page Colourizer Options</h1>
+    <div class="container">
+      <div class="header">
+        <h1>Page Colourizer Options</h1>
+        <hr>
+      </div>
+      <p id="status-message" class="hidden alert"></p>
+      <div class="controls">
+        <label for="palettes_only">
+          <input type="radio" name="color_source" id="palettes_only" value="palettes_only">
+          Palettes only (default)
+        </label>
+        <label for="palettes_and_patterns">
+          <input type="radio" name="color_source" id="palettes_and_patterns" value="palettes_and_patterns">
+          Palettes and patterns
+        </label>
+        <label for="patterns_only">
+          <input type="radio" name="color_source" id="patterns_only" value="patterns_only">
+          Patterns only
+        </label>
+      </div>
+      <p class="help-block">
+        You can include random <a href="http://www.colourlovers.com/patterns" target="_blank">patterns from ColourLovers.com</a>. Patterns are applied to the background of the page, with the pattern's colors being applied to the page just like palettes. Including patterns can make pages look pretty garish.
+      </p>
       <hr>
-    </div>
-    <p id="status-message" class="hidden alert"></p>
-    <div class="controls">
-      <label for="palettes_only">
-        <input type="radio" name="color_source" id="palettes_only" value="palettes_only">
-        Palettes only (default)
-      </label>
-      <label for="palettes_and_patterns">
-        <input type="radio" name="color_source" id="palettes_and_patterns" value="palettes_and_patterns">
-        Palettes and patterns
-      </label>
-      <label for="patterns_only">
-        <input type="radio" name="color_source" id="patterns_only" value="patterns_only">
-        Patterns only
-      </label>
-    </div>
-    <p class="help-block">
-      You can include random <a href="http://www.colourlovers.com/patterns" target="_blank">patterns from ColourLovers.com</a>. Patterns are applied to the background of the page, with the pattern's colors being applied to the page just like palettes. Including patterns can make pages look pretty garish.
-    </p>
-    <hr>
-    <div class="controls">
-      <label for="colour_frenzy">
-        <input type="checkbox" id="colour_frenzy">
-        Enable Colour Frenzy mode?
-      </label>
-    </div>
-    <p class="help-block">
-      Maximum color <em>ENGAGE!</em> With Colour Frenzy mode, every page you
-      load will be colorized automatically. Not for the faint of heart.
-    </p>
-    <div class="footer">
-      <hr>
-      &copy; 2013 Sarah Vessels
-      <span>&middot;</span>
-      <a href="https://github.com/moneypenny/page_colourizer">View source code</a>
+      <div class="controls">
+        <label for="colour_frenzy">
+          <input type="checkbox" id="colour_frenzy">
+          Enable Colour Frenzy mode?
+        </label>
+      </div>
+      <p class="help-block">
+        Maximum color <em>ENGAGE!</em> With Colour Frenzy mode, every page you
+        load will be colorized automatically. Not for the faint of heart.
+      </p>
+      <div class="footer">
+        <hr>
+        &copy; 2013 Sarah Vessels
+        <span>&middot;</span>
+        <a href="https://github.com/moneypenny/page_colourizer">View source code</a>
+      </div>
     </div>
     <script src="jquery-2.0.0.min.js"></script>
     <script src="options.js"></script>

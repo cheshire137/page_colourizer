@@ -28,7 +28,8 @@ a.btn.disabled, a.btn.disabled:hover, a.btn.disabled:focus {
 .alert {
   color: #468847;
   background-color: #dff0d8;
-  padding: 8px 35px 8px 14px;
+  padding: 5px 10px;
+  box-sizing: border-box;
   margin: 14px 0;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
   border: 1px solid #d6e9c6;
@@ -49,7 +50,7 @@ body {
 }
 body.options {
   font-size: 18px;
-  margin: 2em 20%;
+  margin: 0;
 }
 body.options a, body.options a:link, body.options a:visited,
 body.options a:active {
@@ -59,6 +60,10 @@ body.options a:active {
 body.options a:hover, body.options a:focus {
   color: #EE662B;
   text-decoration: none;
+}
+body.options .container {
+  margin: 2em 20%;
+  position: relative;
 }
 body.options .footer a, body.options .footer a:link,
 body.options .footer a:visited, body.options .footer a:active {
@@ -153,4 +158,9 @@ label + label {
 }
 small {
   font-size: 12px;
+}
+#status-message {
+  position: absolute;
+  width: 100%;
+  top: 2.3em;
 }
