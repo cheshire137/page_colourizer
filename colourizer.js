@@ -45,16 +45,26 @@ var page_colourizer = {
     });
   },
 
-  load_random_palette: function(callback) {
+  load_cl_url: function(url, is_pattern, callback) {
+    var req = new XMLHttpRequest();
+    req.open('GET', url, true);
+    var me = this;
+    req.onload = function(e) {
+      me.extract_cl_data_from_xml(e, is_pattern, callback);
+    }.bind(this);
+    req.send(null);
+  },
+
+  load_random_cl_data: function(callback) {
     var me = this;
     this.get_color_source(function(source) {
-      var req = new XMLHttpRequest();
-      req.open('GET', source.url, true);
-      req.onload = function(e) {
-        me.extract_cl_data_from_xml(e, source.is_pattern, callback);
-      }.bind(me);
-      req.send(null);
+      me.load_cl_url(source.url, source.is_pattern, callback);
     });
+  },
+
+  load_cl_data_by_id: function(info, callback) {
+    var url = 'http://www.colourlovers.com/api/' + info.type + '/' + info.id;
+    this.load_cl_url(url, info.type == 'pattern', callback);
   },
 
   extract_cl_data_from_xml: function(e, is_pattern, callback) {
@@ -302,6 +312,23 @@ var page_colourizer = {
     }
   },
 
+  store_info: function(data, index) {
+    $('body').attr('data-colourlovers-id', data.id);
+    $('body').attr('data-colourlovers-type',
+                   data.is_pattern ? 'pattern' : 'palette');
+    $('body').attr('data-colourlovers-index', index);
+  },
+
+  get_stored_info: function() {
+    var id = $('body').attr('data-colourlovers-id');
+    var type = $('body').attr('data-colourlovers-type');
+    var index = $('body').attr('data-colourlovers-index');
+    if (id && type && index) {
+      return {id: id, type: type, index: parseInt(index, 10)};
+    }
+    return undefined;
+  },
+
   colourize_page: function(data, idx) {
     var hex_codes = data.hex_codes;
     this.colourize_bg_elements(hex_codes, idx);
@@ -309,19 +336,41 @@ var page_colourizer = {
     this.colourize_border_elements(hex_codes, idx);
     this.colourize_text_shadow_elements(hex_codes, idx);
     this.set_bg_image(data);
+  },
+
+  on_popup_opened: function(callback) {
+    var info = this.get_stored_info();
+    var me = this;
+    if (info) {
+      this.load_cl_data_by_id(info, function(data) {
+        callback(data, info.index);
+      });
+    } else {
+      this.load_random_cl_data(function(data) {
+        var index = 0;
+        callback(data, index);
+        me.colourize_page(data, index);
+        me.store_info(data, index);
+      });
+    }
+  },
+
+  shuffle_colors: function(data) {
+    var info = this.get_stored_info();
+    var new_index = (info.index + 1) % data.hex_codes.length;
+    this.colourize_page(data, new_index);
+    this.store_info(data, new_index);
   }
 };
 
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-  if (request.greeting == 'load_random_palette') {
-    page_colourizer.load_random_palette(function(data) {
-      sendResponse(data, 0);
-      page_colourizer.colourize_page(data, 0);
+  if (request.greeting == 'popup_opened') {
+    page_colourizer.on_popup_opened(function(data, idx) {
+      sendResponse(data, idx);
     });
   } else if (request.greeting == 'shuffle_colors') {
-    var new_index = (request.index + 1) % request.data.hex_codes.length;
-    page_colourizer.colourize_page(request.data, new_index);
-    sendResponse(new_index);
+    page_colourizer.shuffle_colors(request.data);
+    sendResponse();
   } else {
     sendResponse({});
   }
@@ -330,8 +379,8 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 chrome.storage.sync.get('colourizer_options', function(opts) {
   opts = opts.colourizer_options;
   if (opts.colour_frenzy) {
-    page_colourizer.load_random_palette(function(data) {
-      page_colourizer.colourize_page(data, 0);
+    page_colourizer.on_popup_opened(function(data, idx) {
+      // no-op
     });
   }
 });

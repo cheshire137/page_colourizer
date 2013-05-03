@@ -75,10 +75,10 @@ var colourizer_popup = {
     $('h2').fadeIn();
   },
 
-  send_shuffle_colors_request: function(tab, data, idx, callback) {
+  send_shuffle_colors_request: function(tab, data, callback) {
     chrome.tabs.sendRequest(
       tab.id,
-      {greeting: 'shuffle_colors', data: data, index: idx},
+      {greeting: 'shuffle_colors', data: data},
       callback
     );
   },
@@ -89,19 +89,13 @@ var colourizer_popup = {
     }
     link.addClass('disabled');
     $('#spinner').show();
-    var cur_index = parseInt(link.attr('data-index'), 10);
     this.send_shuffle_colors_request(
-      tab, data, cur_index,
-      function(new_index) {
-        link.attr('data-index', new_index);
+      tab, data,
+      function() {
         link.removeClass('disabled');
         $('#spinner').hide();
       }
     );
-  },
-
-  set_shuffle_colors_index: function(index) {
-    $('a#shuffle_colors').attr('data-index', index);
   },
 
   populate_popup: function(tab, data, idx) {
@@ -109,14 +103,12 @@ var colourizer_popup = {
     this.set_palette_creator(data);
     this.set_favorite_link(data);
     this.set_love_link(data);
-    this.set_shuffle_colors_index(idx);
     $('body a').click(this.on_popup_link_click);
     var me = this;
     $('a#shuffle-colors').blur().click(function() {
       me.on_shuffle_colors_clicked($(this), tab, data);
     });
     $('a#options-link').click(function() {
-      console.log(chrome.extension.getURL("options.html"));
       chrome.tabs.create({url: chrome.extension.getURL("options.html")});
       return false;
     });
@@ -127,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
   chrome.tabs.getSelected(null, function(tab) {
     chrome.tabs.sendRequest(
       tab.id,
-      {greeting: 'load_random_palette'},
+      {greeting: 'popup_opened'},
       function(data, idx) {
         colourizer_popup.populate_popup(tab, data, idx);
       }
