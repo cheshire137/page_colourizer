@@ -16,8 +16,6 @@ Click the Shuffle Colors button to reapply the current palette in a different wa
 
 - Allow you to pick a color and the extension grabs a palette that uses that color.
 
-- Add a Colour Frenzy option that will colorize every page automatically, as soon as it loads.
-
 ## Credits
 
 This is built using the [ColourLovers API](http://www.colourlovers.com/api) and [jQuery](http://jquery.com/).
