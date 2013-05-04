@@ -60,12 +60,11 @@ var page_colourizer = {
     });
   },
 
-  store_info: function(tab_id, data, index, callback) {
+  store_info: function(tab_id, data, callback) {
     var type = data.is_pattern ? 'pattern' : 'palette';
-    index = parseInt(index, 10);
-    data = {id: data.id, index: index, type: type, hex_codes: data.hex_codes,
-            title: data.title, url: data.url, image_url: data.image_url,
-            user_name: data.user_name};
+    data = {id: data.id, index: parseInt(data.index, 10), type: type,
+            hex_codes: data.hex_codes, title: data.title, url: data.url,
+            image_url: data.image_url, user_name: data.user_name};
     this.store_info_for_tab(tab_id, data, callback);
   },
 
@@ -369,8 +368,9 @@ var page_colourizer = {
     }
   },
 
-  colourize_page: function(data, idx) {
+  colourize_page: function(data) {
     var hex_codes = data.hex_codes;
+    var idx = data.index;
     this.colourize_bg_elements(hex_codes, idx);
     this.colourize_text_elements(hex_codes, idx);
     this.colourize_border_elements(hex_codes, idx);
@@ -380,16 +380,16 @@ var page_colourizer = {
 
   on_popup_opened: function(tab_id, callback) {
     var me = this;
-    this.get_stored_info(tab_id, function(info) {
-      if (info) {
-        me.colourize_page(info, info.index);
-        callback(info);
+    this.get_stored_info(tab_id, function(stored_data) {
+      if (stored_data) {
+        me.colourize_page(stored_data);
+        callback(stored_data);
       } else {
-        me.load_random_cl_data(function(data) {
-          var index = 0;
-          me.colourize_page(data, index);
-          me.store_info(tab_id, data, index, function() {
-            callback(data);
+        me.load_random_cl_data(function(new_data) {
+          new_data.index = 0;
+          me.colourize_page(new_data);
+          me.store_info(tab_id, new_data, function() {
+            callback(new_data);
           });
         });
       }
@@ -399,9 +399,9 @@ var page_colourizer = {
   on_new_colors_requested: function(tab_id, callback) {
     var me = this;
     this.load_random_cl_data(function(data) {
-      var index = 0;
-      me.colourize_page(data, index);
-      me.store_info(tab_id, data, index, function() {
+      data.index = 0;
+      me.colourize_page(data);
+      me.store_info(tab_id, data, function() {
         callback(data);
       });
     });
@@ -410,9 +410,9 @@ var page_colourizer = {
   shuffle_colors: function(tab_id, callback) {
     var me = this;
     this.get_stored_info(tab_id, function(data) {
-      var new_index = (data.index + 1) % data.hex_codes.length;
-      me.colourize_page(data, new_index);
-      me.store_info(tab_id, data, new_index, function() {
+      data.index = (data.index + 1) % data.hex_codes.length;
+      me.colourize_page(data);
+      me.store_info(tab_id, data, function() {
         callback();
       });
     });
