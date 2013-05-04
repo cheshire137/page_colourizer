@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Page Colourizer",
   "description": "This grabs a random color palette from ColourLovers.com and applies it to the page loaded in the current tab.",
-  "version": "0.0.0.3",
+  "version": "0.0.0.4",
   "permissions": [
     "tabs", "<all_urls>", "background", "storage"
   ],

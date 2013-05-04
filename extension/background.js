@@ -9,6 +9,17 @@ chrome.tabs.onUpdated.addListener(function(tab_id, change_info) {
     );
   }
 });
+
+// chrome.tabs.onActivated.addListener(function(info) {
+//   chrome.tabs.sendRequest(
+//     info.tabId,
+//     {greeting: 'tab_updated', tab_id: info.tabId},
+//     function() {
+//       // no-op
+//     }
+//   );
+// });
+
 chrome.tabs.onRemoved.addListener(function(closed_tab_id, remove_info) {
   chrome.tabs.getSelected(null, function(tab) {
     chrome.tabs.sendRequest(

@@ -113,7 +113,7 @@ var page_colourizer = {
   get_color_sources: function(callback) {
     var me = this;
     chrome.storage.sync.get('colourizer_options', function(opts) {
-      opts = opts.colourizer_options;
+      opts = opts.colourizer_options || {};
       var sources = [];
       if (opts.color_source != 'patterns_only') {
         sources = sources.concat([
@@ -167,7 +167,7 @@ var page_colourizer = {
     }
     callback({hex_codes: hex_codes, title: title, url: url,
               image_url: image_url, user_name: user_name, id: id,
-              is_pattern: is_pattern});
+              is_pattern: is_pattern, index: 0});
   },
 
   has_color: function(rgb_code) {
@@ -426,7 +426,6 @@ var page_colourizer = {
   on_new_colors_requested: function(tab_id, callback) {
     var me = this;
     this.load_random_cl_data(function(data) {
-      data.index = 0;
       me.colourize_page(data);
       me.store_info(tab_id, data, function() {
         callback(data);
@@ -448,7 +447,7 @@ var page_colourizer = {
   on_tab_updated: function(tab_id, callback) {
     var me = this;
     chrome.storage.sync.get('colourizer_options', function(opts) {
-      opts = opts.colourizer_options;
+      opts = opts.colourizer_options || {};
       if (opts.colour_frenzy) {
         me.on_new_colors_requested(tab_id, function(data) {
           callback();
