@@ -17,10 +17,12 @@
 
 function save_options() {
   var color_source = $('input[name="color_source"]:checked').val();
+  var selection_method = $('input[name="selection_method"]:checked').val();
   var colour_frenzy = $('#colour_frenzy').is(':checked');
   var status_area = $('#status-message');
   var options = {color_source: color_source,
-                 colour_frenzy: colour_frenzy};
+                 colour_frenzy: colour_frenzy,
+                 selection_method: selection_method};
   chrome.storage.sync.set({'colourizer_options': options}, function() {
     status_area.text('Okay, got it!').fadeIn(function() {
       setTimeout(function() {
@@ -40,6 +42,13 @@ function restore_options() {
     } else {
       $('#palettes_only').attr('checked', 'checked');
     }
+    if (opts.selection_method) {
+      var selector = 'input[name="selection_method"][value="' +
+                     opts.selection_method + '"]';
+      $(selector).attr('checked', 'checked');
+    } else {
+      $('#random_colors').attr('checked', 'checked');
+    }
     if (opts.colour_frenzy) {
       $('#colour_frenzy').attr('checked', 'checked');
     }
@@ -47,7 +56,13 @@ function restore_options() {
 }
 
 document.addEventListener('DOMContentLoaded', restore_options);
+
 $('#palettes_only').on('change', save_options);
 $('#palettes_and_patterns').on('change', save_options);
 $('#patterns_only').on('change', save_options);
+
+$('#random_colors').on('change', save_options);
+$('#top_colors').on('change', save_options);
+$('#new_colors').on('change', save_options);
+
 $('#colour_frenzy').on('change', save_options);

@@ -17,7 +17,12 @@
 
 var page_colourizer = {
   random_palette_url: 'http://www.colourlovers.com/api/palettes/random',
+  top_palette_url: 'http://www.colourlovers.com/api/palettes/top',
+  new_palette_url: 'http://www.colourlovers.com/api/palettes/new',
+
   random_pattern_url: 'http://www.colourlovers.com/api/patterns/random',
+  top_pattern_url: 'http://www.colourlovers.com/api/patterns/top',
+  new_pattern_url: 'http://www.colourlovers.com/api/patterns/new',
 
   garbage_collect: function(open_tabs, callback) {
     var me = this;
@@ -75,6 +80,36 @@ var page_colourizer = {
     });
   },
 
+  get_palette_url: function(opts) {
+    if (opts.selection_method != 'top_colors' &&
+        opts.selection_method != 'new_colors') {
+      return this.random_palette_url;
+    }
+    var params = '?orderCol=dateCreated' +
+                 '&sortBy=DESC' +
+                 '&numResults=1' +
+                 '&resultOffset=' + Math.round(Math.random() * 1000);
+    if (opts.selection_method == 'top_colors') {
+      return this.top_palette_url + params;
+    }
+    return this.new_palette_url + params;
+  },
+
+  get_pattern_url: function(opts) {
+    if (opts.selection_method != 'top_colors' &&
+        opts.selection_method != 'new_colors') {
+      return this.random_pattern_url;
+    }
+    var params = '?orderCol=dateCreated' +
+                 '&sortBy=DESC' +
+                 '&numResults=1' +
+                 '&resultOffset=' + Math.round(Math.random() * 1000);
+    if (opts.selection_method == 'top_colors') {
+      return this.top_pattern_url + params;
+    }
+    return this.new_pattern_url + params;
+  },
+
   get_color_sources: function(callback) {
     var me = this;
     chrome.storage.sync.get('colourizer_options', function(opts) {
@@ -82,13 +117,13 @@ var page_colourizer = {
       var sources = [];
       if (opts.color_source != 'patterns_only') {
         sources = sources.concat([
-          {is_pattern: false, url: me.random_palette_url}
+          {is_pattern: false, url: me.get_palette_url(opts)}
         ]);
       }
       if (opts.color_source == 'palettes_and_patterns' ||
           opts.color_source == 'patterns_only') {
         sources = sources.concat([
-          {is_pattern: true, url: me.random_pattern_url}
+          {is_pattern: true, url: me.get_pattern_url(opts)}
         ]);
       }
       callback(sources);
