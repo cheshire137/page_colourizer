@@ -154,6 +154,16 @@ document.addEventListener('DOMContentLoaded', function() {
       {greeting: 'popup_opened', tab_id: tab.id},
       function(data) {
         colourizer_popup.populate_popup(tab, data);
+        // Remove any stored data for tabs that no longer exist.
+        chrome.tabs.getAllInWindow(null, function(tabs) {
+          chrome.tabs.sendRequest(
+            tab.id,
+            {greeting: 'garbage_collect', tabs: tabs},
+            function() {
+              // no-op
+            }
+          );
+        });
       }
     );
   });

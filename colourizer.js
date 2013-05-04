@@ -19,12 +19,41 @@ var page_colourizer = {
   random_palette_url: 'http://www.colourlovers.com/api/palettes/random',
   random_pattern_url: 'http://www.colourlovers.com/api/patterns/random',
 
+  garbage_collect: function(open_tabs, callback) {
+    var me = this;
+    var open_tab_ids = [];
+    for (var i=0; i<open_tabs.length; i++) {
+      open_tab_ids[i] = open_tabs[i].id;
+    }
+    chrome.storage.local.get('colourizer_data', function(data) {
+      var all_tab_data = data.colourizer_data || {};
+      for (var stored_tab_id in all_tab_data) {
+        stored_tab_id = parseInt(stored_tab_id, 10);
+        // If we have data for a tab that is no longer open, delete it.
+        if (open_tab_ids.indexOf(stored_tab_id) < 0) {
+          delete all_tab_data[stored_tab_id];
+        }
+      }
+      chrome.storage.local.set({'colourizer_data': all_tab_data}, function() {
+        callback();
+      });
+    });
+  },
+
+  delete_info_for_tab: function(tab_id, callback) {
+    chrome.storage.local.get('colourizer_data', function(data) {
+      var all_tab_data = data.colourizer_data || {};
+      delete all_tab_data[tab_id];
+      chrome.storage.local.set({'colourizer_data': all_tab_data}, function() {
+        callback();
+      });
+    });
+  },
+
   store_info_for_tab: function(tab_id, tab_data, callback) {
     chrome.storage.local.get('colourizer_data', function(data) {
       var all_tab_data = data.colourizer_data || {};
       all_tab_data[tab_id] = tab_data;
-      console.log('storing all tab data, updated tab id ' + tab_id);
-      console.log(all_tab_data[tab_id]);
       chrome.storage.local.set({'colourizer_data': all_tab_data}, function() {
         callback();
       });
@@ -43,8 +72,6 @@ var page_colourizer = {
   get_stored_info: function(tab_id, callback) {
     chrome.storage.local.get('colourizer_data', function(data) {
       all_tab_data = data.colourizer_data;
-      console.log('read all stored tab data, looking for tab ' + tab_id);
-      console.log(all_tab_data[tab_id]);
       callback(all_tab_data[tab_id]);
     });
   },
@@ -385,7 +412,6 @@ var page_colourizer = {
     var me = this;
     this.get_stored_info(tab_id, function(data) {
       var new_index = (data.index + 1) % data.hex_codes.length;
-      console.log('palette ' + data.title + ', tab id ' + tab_id + ', old index ' + data.index + ', new index ' + new_index);
       me.colourize_page(data, new_index);
       me.store_info(tab_id, data, new_index, function() {
         callback();
@@ -398,12 +424,15 @@ var page_colourizer = {
     chrome.storage.sync.get('colourizer_options', function(opts) {
       opts = opts.colourizer_options;
       if (opts.colour_frenzy) {
-        console.log('colour frenzy for tab ' + tab_id);
         me.on_new_colors_requested(tab_id, function(data) {
-          callback(data);
+          callback();
         });
       }
     });
+  },
+
+  on_tab_closed: function(tab_id, callback) {
+    this.delete_info_for_tab(tab_id, callback);
   }
 };
 
@@ -413,7 +442,6 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
       sendResponse(data);
     });
   } else if (request.greeting == 'shuffle_colors') {
-    console.log('got shuffle colors request in tab ' + request.tab_id);
     page_colourizer.shuffle_colors(request.tab_id, function() {
       sendResponse();
     });
@@ -422,8 +450,16 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
       sendResponse(data);
     });
   } else if (request.greeting == 'tab_updated') {
-    page_colourizer.on_tab_updated(request.tab_id, function(data) {
-      sendResponse(data);
+    page_colourizer.on_tab_updated(request.tab_id, function() {
+      sendResponse();
+    });
+  } else if (request.greeting == 'tab_closed') {
+    page_colourizer.on_tab_closed(request.tab_id, function() {
+      sendResponse();
+    });
+  } else if (request.greeting == 'garbage_collect') {
+    page_colourizer.garbage_collect(request.tabs, function() {
+      sendResponse();
     });
   } else {
     sendResponse({});
