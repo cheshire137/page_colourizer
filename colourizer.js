@@ -153,11 +153,6 @@ var page_colourizer = {
     });
   },
 
-  load_cl_data_by_id: function(info, callback) {
-    var url = 'http://www.colourlovers.com/api/' + info.type + '/' + info.id;
-    this.load_cl_url(url, info.type == 'pattern', callback);
-  },
-
   extract_cl_data_from_xml: function(e, is_pattern, callback) {
     var xml = e.target.responseXML;
     var hex_nodes = xml.querySelectorAll('hex');
