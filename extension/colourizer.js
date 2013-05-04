@@ -300,10 +300,6 @@ var page_colourizer = {
     return 0.2126*r + 0.7151*g + 0.0721*b;
   },
 
-  get_color_ratio: function(rgb_code1, rgb_code2) {
-    return (this.y(rgb_code1) + 0.05) / (this.y(rgb_code2) + 0.05);
-  },
-
   get_text_color_for_bg: function(rgb_bg) {
     var luminance = this.y(rgb_bg); // 1 = white, 0 = black
     if (luminance < 0.25) { // close to black background
