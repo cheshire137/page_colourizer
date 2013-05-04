@@ -29,7 +29,10 @@ var colourizer_popup = {
   set_favorite_link: function(data) {
     var url = 'http://www.colourlovers.com/op/add/favorite/p/' +
               data.id;
-    $('#favorite-container a').attr('href', url);
+    $('a#favorite-link').unbind('click').click(function() {
+      chrome.tabs.create({url: url});
+      return false;
+    });
     $('#favorite-container').fadeIn().css('display', 'inline-block');
   },
 
@@ -37,25 +40,17 @@ var colourizer_popup = {
     var context = data.is_pattern ? 'n' : 'p';
     var url = 'http://www.colourlovers.com/ajax/add/score/' + context + '/' +
               data.id;
-    $('#love-container a').attr('href', url).
-                           attr('data-redirect', data.url);
-    $('#love-container').fadeIn().css('display', 'inline-block');
-  },
-
-  on_popup_link_click: function() {
-    var a = $(this);
-    var url = a.attr('href');
-    if (a[0].hasAttribute('data-redirect')) {
+    var me = this;
+    $('a#love-link').unbind('click').click(function() {
       var req = new XMLHttpRequest();
       req.open("GET", url, true);
       req.onload = function(e) {
-        chrome.tabs.create({url: a.attr('data-redirect')});
-      }.bind(this);
+        chrome.tabs.create({url: data.url});
+      }.bind(me);
       req.send(null);
-    } else if (url != '#') {
-      chrome.tabs.create({url: url});
-    }
-    return false;
+      return false;
+    });
+    $('#love-container').fadeIn().css('display', 'inline-block');
   },
 
   set_popup_title: function(data) {
@@ -114,7 +109,7 @@ var colourizer_popup = {
 
   setup_shuffle_colors_button: function(tab) {
     var me = this;
-    $('a#shuffle-colors').click(function() {
+    $('a#shuffle-colors').unbind('click').click(function() {
       me.on_shuffle_colors_clicked($(this), tab);
       return false;
     });
@@ -122,14 +117,14 @@ var colourizer_popup = {
 
   setup_new_colors_button: function(tab) {
     var me = this;
-    $('a#new-colors').click(function() {
+    $('a#new-colors').unbind('click').click(function() {
       me.on_new_colors_clicked($(this), tab);
       return false;
     });
   },
 
   setup_options_link: function() {
-    $('a#options-link').blur().click(function() {
+    $('a#options-link').unbind('click').blur().click(function() {
       chrome.tabs.create({url: chrome.extension.getURL("options.html")});
       return false;
     });
@@ -140,7 +135,6 @@ var colourizer_popup = {
     this.set_palette_creator(data);
     this.set_favorite_link(data);
     this.set_love_link(data);
-    $('body a').click(this.on_popup_link_click);
     this.setup_shuffle_colors_button(tab);
     this.setup_new_colors_button(tab);
     this.setup_options_link();
@@ -149,21 +143,21 @@ var colourizer_popup = {
 
 document.addEventListener('DOMContentLoaded', function() {
   chrome.tabs.getSelected(null, function(tab) {
+    // Remove any stored data for tabs that no longer exist.
+    chrome.tabs.getAllInWindow(null, function(tabs) {
+      chrome.tabs.sendRequest(
+        tab.id,
+        {greeting: 'garbage_collect', tabs: tabs},
+        function() {
+          // no-op
+        }
+      );
+    });
     chrome.tabs.sendRequest(
       tab.id,
       {greeting: 'popup_opened', tab_id: tab.id},
       function(data) {
         colourizer_popup.populate_popup(tab, data);
-        // Remove any stored data for tabs that no longer exist.
-        chrome.tabs.getAllInWindow(null, function(tabs) {
-          chrome.tabs.sendRequest(
-            tab.id,
-            {greeting: 'garbage_collect', tabs: tabs},
-            function() {
-              // no-op
-            }
-          );
-        });
       }
     );
   });

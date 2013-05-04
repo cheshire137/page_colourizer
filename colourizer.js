@@ -23,7 +23,7 @@ var page_colourizer = {
     var me = this;
     var open_tab_ids = [];
     for (var i=0; i<open_tabs.length; i++) {
-      open_tab_ids[i] = open_tabs[i].id;
+      open_tab_ids[i] = parseInt(open_tabs[i].id, 10);
     }
     chrome.storage.local.get('colourizer_data', function(data) {
       var all_tab_data = data.colourizer_data || {};
@@ -378,18 +378,19 @@ var page_colourizer = {
     this.set_bg_image(data);
   },
 
-  on_popup_opened: function(tab_id, callback) {
+  on_popup_opened: function(tab_id, data_callback) {
     var me = this;
     this.get_stored_info(tab_id, function(stored_data) {
       if (stored_data) {
+        data_callback(stored_data);
         me.colourize_page(stored_data);
-        callback(stored_data);
       } else {
         me.load_random_cl_data(function(new_data) {
           new_data.index = 0;
+          data_callback(new_data);
           me.colourize_page(new_data);
           me.store_info(tab_id, new_data, function() {
-            callback(new_data);
+            // no-op
           });
         });
       }
@@ -437,8 +438,7 @@ var page_colourizer = {
 
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
   if (request.greeting == 'popup_opened') {
-    page_colourizer.on_popup_opened(request.tab_id, function(data) {
-      sendResponse(data);
+    page_colourizer.on_popup_opened(request.tab_id, function(data) { sendResponse(data);
     });
   } else if (request.greeting == 'shuffle_colors') {
     page_colourizer.shuffle_colors(request.tab_id, function() {
