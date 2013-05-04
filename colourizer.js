@@ -382,9 +382,8 @@ var page_colourizer = {
     var me = this;
     this.get_stored_info(tab_id, function(info) {
       if (info) {
-        me.load_cl_data_by_id(info, function(data) {
-          callback(data);
-        });
+        me.colourize_page(info, info.index);
+        callback(info);
       } else {
         me.load_random_cl_data(function(data) {
           var index = 0;
