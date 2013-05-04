@@ -76,11 +76,14 @@ var colourizer_popup = {
   },
 
   send_shuffle_colors_request: function(tab, callback) {
-    chrome.tabs.sendRequest(tab.id, {greeting: 'shuffle_colors'}, callback);
+    chrome.tabs.sendRequest(tab.id,
+                            {greeting: 'shuffle_colors', tab_id: tab.id},
+                            callback);
   },
 
   send_new_colors_request: function(tab, callback) {
-    chrome.tabs.sendRequest(tab.id, {greeting: 'new_colors'}, callback);
+    chrome.tabs.sendRequest(tab.id, {greeting: 'new_colors', tab_id: tab.id},
+                            callback);
   },
 
   on_shuffle_colors_clicked: function(link, tab) {
@@ -148,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
   chrome.tabs.getSelected(null, function(tab) {
     chrome.tabs.sendRequest(
       tab.id,
-      {greeting: 'popup_opened'},
+      {greeting: 'popup_opened', tab_id: tab.id},
       function(data) {
         colourizer_popup.populate_popup(tab, data);
       }

@@ -19,20 +19,33 @@ var page_colourizer = {
   random_palette_url: 'http://www.colourlovers.com/api/palettes/random',
   random_pattern_url: 'http://www.colourlovers.com/api/patterns/random',
 
-  store_info: function(data, index, callback) {
+  store_info_for_tab: function(tab_id, tab_data, callback) {
+    chrome.storage.local.get('colourizer_data', function(data) {
+      var all_tab_data = data.colourizer_data || {};
+      all_tab_data[tab_id] = tab_data;
+      console.log('storing all tab data, updated tab id ' + tab_id);
+      console.log(all_tab_data[tab_id]);
+      chrome.storage.local.set({'colourizer_data': all_tab_data}, function() {
+        callback();
+      });
+    });
+  },
+
+  store_info: function(tab_id, data, index, callback) {
     var type = data.is_pattern ? 'pattern' : 'palette';
     index = parseInt(index, 10);
     data = {id: data.id, index: index, type: type, hex_codes: data.hex_codes,
             title: data.title, url: data.url, image_url: data.image_url,
             user_name: data.user_name};
-    chrome.storage.sync.set({'colourizer_data': data}, function() {
-      callback();
-    });
+    this.store_info_for_tab(tab_id, data, callback);
   },
 
-  get_stored_info: function(callback) {
-    chrome.storage.sync.get('colourizer_data', function(data) {
-      callback(data.colourizer_data);
+  get_stored_info: function(tab_id, callback) {
+    chrome.storage.local.get('colourizer_data', function(data) {
+      all_tab_data = data.colourizer_data;
+      console.log('read all stored tab data, looking for tab ' + tab_id);
+      console.log(all_tab_data[tab_id]);
+      callback(all_tab_data[tab_id]);
     });
   },
 
@@ -338,9 +351,9 @@ var page_colourizer = {
     this.set_bg_image(data);
   },
 
-  on_popup_opened: function(callback) {
+  on_popup_opened: function(tab_id, callback) {
     var me = this;
-    this.get_stored_info(function(info) {
+    this.get_stored_info(tab_id, function(info) {
       if (info) {
         me.load_cl_data_by_id(info, function(data) {
           callback(data);
@@ -349,7 +362,7 @@ var page_colourizer = {
         me.load_random_cl_data(function(data) {
           var index = 0;
           me.colourize_page(data, index);
-          me.store_info(data, index, function() {
+          me.store_info(tab_id, data, index, function() {
             callback(data);
           });
         });
@@ -357,52 +370,62 @@ var page_colourizer = {
     });
   },
 
-  on_new_colors_requested: function(callback) {
+  on_new_colors_requested: function(tab_id, callback) {
     var me = this;
     this.load_random_cl_data(function(data) {
       var index = 0;
       me.colourize_page(data, index);
-      me.store_info(data, index, function() {
+      me.store_info(tab_id, data, index, function() {
         callback(data);
       });
     });
   },
 
-  shuffle_colors: function(callback) {
+  shuffle_colors: function(tab_id, callback) {
     var me = this;
-    this.get_stored_info(function(data) {
+    this.get_stored_info(tab_id, function(data) {
       var new_index = (data.index + 1) % data.hex_codes.length;
+      console.log('palette ' + data.title + ', tab id ' + tab_id + ', old index ' + data.index + ', new index ' + new_index);
       me.colourize_page(data, new_index);
-      me.store_info(data, new_index, function() {
+      me.store_info(tab_id, data, new_index, function() {
         callback();
       });
+    });
+  },
+
+  on_tab_updated: function(tab_id, callback) {
+    var me = this;
+    chrome.storage.sync.get('colourizer_options', function(opts) {
+      opts = opts.colourizer_options;
+      if (opts.colour_frenzy) {
+        console.log('colour frenzy for tab ' + tab_id);
+        me.on_new_colors_requested(tab_id, function(data) {
+          callback(data);
+        });
+      }
     });
   }
 };
 
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
   if (request.greeting == 'popup_opened') {
-    page_colourizer.on_popup_opened(function(data) {
+    page_colourizer.on_popup_opened(request.tab_id, function(data) {
       sendResponse(data);
     });
   } else if (request.greeting == 'shuffle_colors') {
-    page_colourizer.shuffle_colors(function() {
+    console.log('got shuffle colors request in tab ' + request.tab_id);
+    page_colourizer.shuffle_colors(request.tab_id, function() {
       sendResponse();
     });
   } else if (request.greeting == 'new_colors') {
-    page_colourizer.on_new_colors_requested(function(data) {
+    page_colourizer.on_new_colors_requested(request.tab_id, function(data) {
+      sendResponse(data);
+    });
+  } else if (request.greeting == 'tab_updated') {
+    page_colourizer.on_tab_updated(request.tab_id, function(data) {
       sendResponse(data);
     });
   } else {
     sendResponse({});
-  }
-});
-
-chrome.storage.sync.get('colourizer_options', function(opts) {
-  opts = opts.colourizer_options;
-  if (opts.colour_frenzy) {
-    page_colourizer.on_new_colors_requested(function(data) {
-      // no-op
-    });
   }
 });

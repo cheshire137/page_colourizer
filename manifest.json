@@ -13,6 +13,9 @@
       "js": ["jquery-2.0.0.min.js", "colourizer.js"]
     }
   ],
+  "background": {
+    "scripts": ["background.js"]
+  },
   "options_page": "options.html",
   "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
   "browser_action": {
