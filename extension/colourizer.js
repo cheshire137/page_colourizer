@@ -75,7 +75,7 @@ var page_colourizer = {
 
   get_stored_info: function(tab_id, callback) {
     chrome.storage.local.get('colourizer_data', function(data) {
-      all_tab_data = data.colourizer_data;
+      all_tab_data = data.colourizer_data || {};
       callback(all_tab_data[tab_id]);
     });
   },

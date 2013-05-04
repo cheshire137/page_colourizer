@@ -34,7 +34,7 @@ function save_options() {
 
 function restore_options() {
   chrome.storage.sync.get('colourizer_options', function(opts) {
-    opts = opts.colourizer_options;
+    opts = opts.colourizer_options || {};
     if (opts.color_source) {
       var selector = 'input[name="color_source"][value="' + opts.color_source +
                      '"]';
