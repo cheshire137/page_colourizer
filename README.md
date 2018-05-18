@@ -1,6 +1,6 @@
 # Page Colourizer
 
-This is a Chrome extension [available in the Chrome Web Store](https://chrome.google.com/webstore/detail/page-colourizer/jgegaianabmabodmfpacefnieamfjene) that grabs a random palette from [ColourLovers.com](http://www.colourlovers.com/) and applies it to the current tab. Click the heart button in your browser and you'll see a palette of up to five colors, which will be applied at random to the page you're viewing.
+This is a Chrome extension that grabs a random palette from [ColourLovers.com](http://www.colourlovers.com/) and applies it to the current tab. Click the heart button in your browser and you'll see a palette of up to five colors, which will be applied at random to the page you're viewing.
 
 Click the Shuffle Colors button to reapply the current palette in a different way to the current tab. If you have a ColourLovers.com account and are signed in, you can Love and Favorite palettes right from the extension.
 
